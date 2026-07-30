@@ -42,16 +42,15 @@ jobs:
               crane auth login "$ECR_REGISTRY" --username AWS --password-stdin
 
       - run:
-          name: Build image with Bazel
+          name: Build and push image
           no_output_timeout: 30m
           command: |
-            bazel build --stamp //cmd/bb_portal:bb_portal_container
+            bazel run --config=compass --stamp \
+              //cmd/bb_portal:bb_portal_container_push_compass
 
       - run:
-          name: Push image to ECR
+          name: Tag image with git SHA
           command: |
-            IMAGE=$(bazel cquery --output=files //cmd/bb_portal:bb_portal_container 2>/dev/null | head -1)
-            crane push "$IMAGE" "$ECR_REGISTRY/$ECR_REPO:latest"
             crane tag "$ECR_REGISTRY/$ECR_REPO:latest" "$CIRCLE_SHA1"
 
       - run:
