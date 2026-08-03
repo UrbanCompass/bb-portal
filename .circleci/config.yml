@@ -62,6 +62,7 @@ workflows:
   build-and-publish:
     jobs:
       - build-and-push:
+          context: aws-urbancompass-build-user
           filters:
             branches:
               only:
