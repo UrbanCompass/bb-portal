@@ -4,8 +4,8 @@ version: 2.1
 # pushes to Compass ECR on every push to compass/main.
 #
 # Required CircleCI project environment variables:
-#   AWS_ACCESS_KEY_ID     - IAM credentials with ECR push access
-#   AWS_SECRET_ACCESS_KEY - IAM credentials with ECR push access
+#   AWS_ACCESS_KEY_ID     - IAM user with sts:AssumeRole on ECRPowerUserRole
+#   AWS_SECRET_ACCESS_KEY - IAM user with sts:AssumeRole on ECRPowerUserRole
 #   AWS_DEFAULT_REGION    - us-east-1
 #   ECR_REGISTRY          - <aws-account-id>.dkr.ecr.<region>.amazonaws.com
 #   ECR_REPO              - <ecr-repository-name>
@@ -36,10 +36,8 @@ jobs:
             chmod +x ~/bin/crane
 
       - run:
-          name: Login to ECR
-          command: |
-            aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | \
-              crane auth login "$ECR_REGISTRY" --username AWS --password-stdin
+          name: Assume ECRPowerUserRole and login to ECR
+          command: bash .circleci/scripts/ecr-login.sh
 
       - run:
           name: Build and push image
@@ -62,7 +60,6 @@ workflows:
   build-and-publish:
     jobs:
       - build-and-push:
-          context: aws-urbancompass-build-user
           filters:
             branches:
               only:
