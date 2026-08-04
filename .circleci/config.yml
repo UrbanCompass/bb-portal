@@ -65,4 +65,3 @@ workflows:
             branches:
               only:
                 - compass/main
-                - rbe/bb-portal-fork-image-pipeline
