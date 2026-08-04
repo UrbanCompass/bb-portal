@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Derive ECRPowerUserRole ARN from ECR_REGISTRY (e.g. 123456789.dkr.ecr.us-east-1.amazonaws.com)
+account_id=$(echo "$ECR_REGISTRY" | cut -d. -f1)
+role_arn="arn:aws:iam::${account_id}:role/ECRPowerUserRole"
+
 # Assume ECRPowerUserRole and export temp credentials for subsequent steps.
 # Credentials are never printed to stdout.
 creds=$(aws sts assume-role \
-  --role-arn "$ECR_POWER_USER_ROLE_ARN" \
+  --role-arn "$role_arn" \
   --role-session-name bb-portal-build)
 
 export AWS_ACCESS_KEY_ID

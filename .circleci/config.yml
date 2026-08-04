@@ -5,12 +5,11 @@ version: 2.1
 #
 # Required CircleCI project-level environment variables (same creds the
 # urbancompass repo uses in aws_auth to pull private ECR executor images):
-#   AWS_ACCESS_KEY_ID       - IAM user with sts:AssumeRole on ECRPowerUserRole
-#   AWS_SECRET_ACCESS_KEY   - IAM user with sts:AssumeRole on ECRPowerUserRole
-#   AWS_DEFAULT_REGION      - us-east-1
-#   ECR_POWER_USER_ROLE_ARN - arn:aws:iam::<account-id>:role/ECRPowerUserRole
-#   ECR_REGISTRY            - <aws-account-id>.dkr.ecr.<region>.amazonaws.com
-#   ECR_REPO                - <ecr-repository-name>
+#   AWS_ACCESS_KEY_ID     - IAM user with sts:AssumeRole on ECRPowerUserRole
+#   AWS_SECRET_ACCESS_KEY - IAM user with sts:AssumeRole on ECRPowerUserRole
+#   AWS_DEFAULT_REGION    - us-east-1
+#   ECR_REGISTRY          - <aws-account-id>.dkr.ecr.<region>.amazonaws.com  (account ID is also used to derive ECRPowerUserRole ARN)
+#   ECR_REPO              - <ecr-repository-name>
 
 jobs:
   build-and-push:
