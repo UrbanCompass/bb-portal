@@ -3,7 +3,8 @@ version: 2.1
 # Builds the bb-portal container image via Bazel (mirrors upstream build) and
 # pushes to Compass ECR on every push to compass/main.
 #
-# Required CircleCI project environment variables:
+# Required CircleCI project-level environment variables (same creds the
+# urbancompass repo uses in aws_auth to pull private ECR executor images):
 #   AWS_ACCESS_KEY_ID     - IAM user with sts:AssumeRole on ECRPowerUserRole
 #   AWS_SECRET_ACCESS_KEY - IAM user with sts:AssumeRole on ECRPowerUserRole
 #   AWS_DEFAULT_REGION    - us-east-1
