@@ -8,6 +8,26 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
+const DEV_ENV = JSON.stringify({
+  featureFlags: {
+    home: { fileUpload: {}, besUploadInstructions: {} },
+    bes: {
+      pageBuilds: {},
+      pageInvocations: {},
+      pageTargets: {},
+      pageTests: {},
+      pageTrends: {},
+    },
+    browser: {},
+    scheduler: {},
+  },
+  grpcBackendUrl: "grpc://localhost:8082",
+  companyName: "UrbanCompass",
+  footerContent: [],
+  additionalBuildColumns: [],
+  additionalBuildInvocationColumns: [],
+});
+
 export default defineConfig({
   plugins: [
     devtools(),
@@ -44,10 +64,32 @@ export default defineConfig({
           );
       },
     },
+    {
+      // In dev mode the Go backend doesn't serve index.html, so window.__env__
+      // is never injected. Replace the placeholder with a local dev config.
+      name: "inject-dev-env",
+      apply: "serve",
+      transformIndexHtml(html) {
+        return html.replace(
+          "<!-- BB_PORTAL_CONFIGURATION_PLACEHOLDER -->",
+          `<script>window.__env__ = ${DEV_ENV}</script>`,
+        );
+      },
+    },
   ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  server: {
+    proxy: {
+      "/api": "http://localhost:4180",
+      "/graphql": "http://localhost:4180",
+      "/prometheus": {
+        target: "http://localhost:9090",
+        rewrite: (path) => path.replace(/^\/prometheus/, ""),
+      },
     },
   },
   test: {
