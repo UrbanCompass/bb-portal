@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Select, Skeleton, Space, Typography } from "antd";
 import type React from "react";
 import { useState } from "react";
+import { env } from "@/utils/env";
 import {
   Area,
   AreaChart,
@@ -43,7 +44,9 @@ async function fetchPhaseRates(rangeSeconds: number, step: number): Promise<Prom
   const end = Math.floor(Date.now() / 1000);
   const start = end - rangeSeconds;
   const query = `sum by (stage) (rate(buildbarn_builder_build_executor_duration_seconds_sum[5m]))`;
-  const url = `/prometheus/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=${step}`;
+  // In production the Go backend proxies /api/v1/prometheus/* → Prometheus.
+  // In dev the Vite config proxies /api/v1/prometheus/* → localhost:9090.
+  const url = `/api/v1/prometheus/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=${step}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Prometheus error: ${res.status} ${res.statusText}`);
   const json = await res.json();
@@ -55,9 +58,12 @@ const WorkerUtilizationChart: React.FC = () => {
   const [rangeIndex, setRangeIndex] = useState(1);
   const { value: rangeSeconds, step } = RANGE_OPTIONS[rangeIndex];
 
+  const prometheusEnabled = Boolean(env.prometheusUrl);
+
   const { data: queueData } = useQuery({
     queryKey: ["listPlatformQueues", "utilization"],
     queryFn: async () => buildQueueStateClient.listPlatformQueues({}),
+    enabled: prometheusEnabled,
   });
 
   const totalWorkers = (queueData?.platformQueues ?? []).reduce(
@@ -74,7 +80,16 @@ const WorkerUtilizationChart: React.FC = () => {
     queryKey: ["prometheusWorkerPhases", rangeSeconds, step],
     queryFn: () => fetchPhaseRates(rangeSeconds, step),
     refetchInterval: 60_000,
+    enabled: prometheusEnabled,
   });
+
+  if (!prometheusEnabled) {
+    return (
+      <Typography.Text type="secondary">
+        Worker utilization chart requires Prometheus. Set <code>prometheus_url</code> in the bb-portal configuration.
+      </Typography.Text>
+    );
+  }
 
   if (isLoading) {
     return <Skeleton active paragraph={{ rows: 4 }} />;
