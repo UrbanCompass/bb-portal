@@ -26,6 +26,7 @@ const DEV_ENV = JSON.stringify({
   footerContent: [],
   additionalBuildColumns: [],
   additionalBuildInvocationColumns: [],
+  prometheusUrl: "http://localhost:9090",
 });
 
 export default defineConfig({
@@ -86,9 +87,9 @@ export default defineConfig({
     proxy: {
       "/api": "http://localhost:4180",
       "/graphql": "http://localhost:4180",
-      "/prometheus": {
+      "/api/v1/prometheus": {
         target: "http://localhost:9090",
-        rewrite: (path) => path.replace(/^\/prometheus/, ""),
+        rewrite: (path) => path.replace(/^\/api\/v1\/prometheus/, ""),
       },
     },
   },
