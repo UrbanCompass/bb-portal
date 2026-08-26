@@ -70,10 +70,8 @@ const WorkerUtilizationChart: React.FC = () => {
 
   const prometheusEnabled = Boolean(env.prometheusUrl);
 
-  // Share the cache with PlatformQueuesTable — use the same key so a single RPC serves both.
-  // We only read workersCount so the PlatformQueueTableState shape doesn't matter here.
-  const { data: queueData, refetchInterval: _ignored } = useQuery({
-    queryKey: ["listPlatformQueues"],
+  const { data: queueData } = useQuery({
+    queryKey: ["listPlatformQueuesForChart"],
     queryFn: async () => buildQueueStateClient.listPlatformQueues({}),
     enabled: prometheusEnabled,
     refetchInterval: 30_000,

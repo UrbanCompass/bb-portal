@@ -20,6 +20,16 @@ func NewPrometheusService(prometheusURL string, router *mux.Router) error {
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(target)
+	// Remove Accept-Encoding so Prometheus returns plain (uncompressed) JSON.
+	// Without this, the browser's Accept-Encoding header is forwarded verbatim,
+	// Prometheus compresses the response, and the Go proxy passes through the
+	// compressed bytes without decompressing — breaking JSON parsing in the browser.
+	proxy.ModifyResponse = nil
+	originalDirector := proxy.Director
+	proxy.Director = func(req *http.Request) {
+		originalDirector(req)
+		req.Header.Del("Accept-Encoding")
+	}
 	// Strip the /api/v1/prometheus prefix before forwarding so the upstream
 	// Prometheus receives its native /api/v1/... paths.
 	router.PathPrefix("/api/v1/prometheus/").Handler(
