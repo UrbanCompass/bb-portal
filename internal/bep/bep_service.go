@@ -89,10 +89,15 @@ func NewBuildEventProtocolService(
 	// kill the process. SetPanicOnFault converts address faults in this
 	// goroutine to recoverable panics; the outer recover() then returns 500.
 	gqlHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		debug.SetPanicOnFault(true)
+		// SetPanicOnFault converts address faults (SIGSEGV) to recoverable panics
+		// in this goroutine. gqlparser walks.go:262 dereferences a string as a
+		// pointer during query parsing — before any response bytes are written —
+		// so the recover() below can safely return 500.
+		old := debug.SetPanicOnFault(true)
+		defer debug.SetPanicOnFault(old)
 		defer func() {
 			if rec := recover(); rec != nil {
-				log.Printf("ERROR: GraphQL handler panic recovered: %v", rec)
+				log.Printf("ERROR: GraphQL handler panic recovered: %v\n%s", rec, debug.Stack())
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
 		}()
