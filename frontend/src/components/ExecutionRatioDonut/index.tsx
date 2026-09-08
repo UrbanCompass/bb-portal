@@ -66,35 +66,74 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
 export const ExecutionRatioDonut: React.FC<Props> = ({ runnerCounts }) => {
   const { token } = theme.useToken();
 
-  const total =
-    runnerCounts.find((r) => r.name === "total")?.actionsExecuted ?? 0;
+  const KNOWN_KEYS = Object.keys(RUNNER_COLORS);
 
-  const data: ChartEntry[] = runnerCounts
+  const known = runnerCounts.filter(
+    (r): r is typeof r & { name: string } =>
+      !!r.name &&
+      KNOWN_KEYS.includes(r.name) &&
+      (r.actionsExecuted ?? 0) > 0,
+  );
+
+  const otherValue = runnerCounts
     .filter(
-      (r): r is typeof r & { name: string } =>
-        !!r.name && r.name !== "total" && (r.actionsExecuted ?? 0) > 0,
+      (r) =>
+        r.name &&
+        r.name !== "total" &&
+        !KNOWN_KEYS.includes(r.name) &&
+        (r.actionsExecuted ?? 0) > 0,
     )
-    .map((r) => {
-      const name = r.name;
-      const value = r.actionsExecuted ?? 0;
-      const percent = total > 0 ? (value / total) * 100 : 0;
-      return {
-        name,
-        label: RUNNER_LABELS[name] ?? name,
-        value,
-        percent,
-        color: RUNNER_COLORS[name] ?? token.colorTextTertiary,
-      };
-    })
-    .sort((a, b) => b.value - a.value);
+    .reduce((sum, r) => sum + (r.actionsExecuted ?? 0), 0);
 
-  if (data.length === 0) return null;
+  const otherNames = runnerCounts
+    .filter(
+      (r) =>
+        r.name &&
+        r.name !== "total" &&
+        !KNOWN_KEYS.includes(r.name) &&
+        (r.actionsExecuted ?? 0) > 0,
+    )
+    .map((r) => `${r.name} (${r.actionsExecuted ?? 0})`)
+    .join(", ");
+
+  const displayTotal =
+    known.reduce((sum, r) => sum + (r.actionsExecuted ?? 0), 0) + otherValue;
+
+  const knownEntries: ChartEntry[] = known.map((r) => {
+    const name = r.name;
+    const value = r.actionsExecuted ?? 0;
+    return {
+      name,
+      label: RUNNER_LABELS[name] ?? name,
+      value,
+      percent: displayTotal > 0 ? (value / displayTotal) * 100 : 0,
+      color: RUNNER_COLORS[name] ?? token.colorTextTertiary,
+    };
+  });
+
+  const otherEntry: ChartEntry | null =
+    otherValue > 0
+      ? {
+          name: "other",
+          label: `Other (${otherNames})`,
+          value: otherValue,
+          percent: displayTotal > 0 ? (otherValue / displayTotal) * 100 : 0,
+          color: "#8C8C8C",
+        }
+      : null;
+
+  const chartData: ChartEntry[] = [
+    ...knownEntries.sort((a, b) => b.value - a.value),
+    ...(otherEntry ? [otherEntry] : []),
+  ];
+
+  if (chartData.length === 0) return null;
 
   return (
     <PieChart width={380} height={160}>
       <Pie
         dataKey="value"
-        data={data}
+        data={chartData}
         innerRadius={45}
         outerRadius={70}
         cx={80}
@@ -103,7 +142,7 @@ export const ExecutionRatioDonut: React.FC<Props> = ({ runnerCounts }) => {
         strokeWidth={1}
         stroke="white"
       >
-        {data.map((entry) => (
+        {chartData.map((entry) => (
           <Cell key={entry.name} fill={entry.color} />
         ))}
       </Pie>

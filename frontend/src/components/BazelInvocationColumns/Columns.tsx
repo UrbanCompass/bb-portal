@@ -1,6 +1,6 @@
 import { ClockCircleFilled, SearchOutlined } from "@ant-design/icons";
 import { Link } from "@tanstack/react-router";
-import { Space, Tag } from "antd";
+import { Space, Tag, Tooltip } from "antd";
 import type { FilterValue } from "antd/es/table/interface";
 import dayjs from "dayjs";
 import { validate as uuidValidate } from "uuid";
@@ -191,23 +191,31 @@ export const executionRatioColumn: TableColumnTypeWithFilter<
     if (!runnerCounts?.length) {
       return <span style={{ color: "#8C8C8C" }}>—</span>;
     }
-    const total =
-      runnerCounts.find((r) => r.name === "total")?.actionsExecuted ?? 0;
-    if (total === 0) {
+    const SHOWN_KEYS = ["remote", "remote cache hit", "local"] as const;
+    const counts = SHOWN_KEYS.map((key) => ({
+      key,
+      count: runnerCounts.find((r) => r.name === key)?.actionsExecuted ?? 0,
+    }));
+    const otherRunners = runnerCounts.filter(
+      (r) => r.name && r.name !== "total" && !(SHOWN_KEYS as readonly string[]).includes(r.name),
+    );
+    const otherCount = otherRunners.reduce((sum, r) => sum + (r.actionsExecuted ?? 0), 0);
+    const allTotal = counts.reduce((sum, { count }) => sum + count, 0) + otherCount;
+    if (allTotal === 0) {
       return <span style={{ color: "#8C8C8C" }}>—</span>;
     }
-    const segments = (["remote", "remote cache hit", "local"] as const).flatMap(
-      (key) => {
-        const count =
-          runnerCounts.find((r) => r.name === key)?.actionsExecuted ?? 0;
-        if (count === 0) return [];
-        const pct = ((count / total) * 100).toFixed(0);
-        return [{ key, pct }];
-      },
-    );
+    const segments = counts.flatMap(({ key, count }) => {
+      if (count === 0) return [];
+      const pct = ((count / allTotal) * 100).toFixed(0);
+      return [{ key, pct }];
+    });
     if (segments.length === 0) {
       return <span style={{ color: "#8C8C8C" }}>—</span>;
     }
+    const otherPct = otherCount > 0 ? ((otherCount / allTotal) * 100).toFixed(0) : null;
+    const otherTitle = otherRunners
+      .map((r) => `${r.name}: ${r.actionsExecuted ?? 0}`)
+      .join(", ");
     return (
       <Space size={2} wrap>
         {segments.map((s) => (
@@ -219,6 +227,13 @@ export const executionRatioColumn: TableColumnTypeWithFilter<
             {RATIO_ABBR[s.key]} {s.pct}%
           </Tag>
         ))}
+        {otherPct && (
+          <Tooltip title={otherTitle}>
+            <Tag style={{ margin: 0, fontSize: 11, cursor: "default" }}>
+              O {otherPct}%
+            </Tag>
+          </Tooltip>
+        )}
       </Space>
     );
   },
