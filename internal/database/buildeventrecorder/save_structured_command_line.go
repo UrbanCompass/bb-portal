@@ -2,6 +2,7 @@ package buildeventrecorder
 
 import (
 	"context"
+	"log/slog"
 	"slices"
 	"sort"
 	"strings"
@@ -128,10 +129,17 @@ func (r *buildEventRecorder) recordBuild(ctx context.Context, tx database.Tx, in
 		return nil
 	}
 	buildID, ok := invocationMetadata.BuildTags[r.buildKey]
-	if !ok {
-		return nil
-	}
-	if buildID == "" {
+	if !ok || buildID == "" {
+		slog.Warn("Build row not created: buildKey not found in extracted buildTags; check invocationMetadataExtractor expression and --client_env forwarding",
+			"buildKey", r.buildKey,
+			"extractedKeys", func() []string {
+				keys := make([]string, 0, len(invocationMetadata.BuildTags))
+				for k := range invocationMetadata.BuildTags {
+					keys = append(keys, k)
+				}
+				return keys
+			}(),
+		)
 		return nil
 	}
 

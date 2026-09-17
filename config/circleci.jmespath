@@ -1,0 +1,30 @@
+{
+  "username": env.CIRCLE_USERNAME
+  "hostname": env.HOSTNAME
+  "sourceControls": [
+    {
+      "repo": env.CIRCLE_PROJECT_REPONAME
+      "repoUrl": env.CIRCLE_REPOSITORY_URL
+      "ref": env.CIRCLE_BRANCH || env.CIRCLE_TAG || `null`
+      "refUrl": env.CIRCLE_PULL_REQUEST || (env.CIRCLE_REPOSITORY_URL && env.CIRCLE_BRANCH) && join('/', [env.CIRCLE_REPOSITORY_URL, 'tree', env.CIRCLE_BRANCH]) || `null`
+      "commit": env.CIRCLE_SHA1
+      "commitUrl": (env.CIRCLE_REPOSITORY_URL && env.CIRCLE_SHA1) && join('/', [env.CIRCLE_REPOSITORY_URL, 'commit', env.CIRCLE_SHA1]) || `null`
+    }
+  ]
+  "invocationTags": {
+    "branch": env.CIRCLE_BRANCH || `null`
+    "pull_request": env.CIRCLE_PULL_REQUEST || `null`
+    "pull_request_url": env.CIRCLE_PULL_REQUEST || `null`
+    "workflow": env.CIRCLE_WORKFLOW_ID || `null`
+    "job": env.CIRCLE_JOB || `null`
+    "build_url": env.CIRCLE_BUILD_URL || `null`
+  }
+  "buildTags": {
+    "repo": env.CIRCLE_PROJECT_REPONAME || `null`
+    "repo_url": env.CIRCLE_REPOSITORY_URL || `null`
+    "pull_request": env.CIRCLE_PULL_REQUEST || `null`
+    "pull_request_url": env.CIRCLE_PULL_REQUEST || `null`
+    "workflow": env.CIRCLE_WORKFLOW_ID || `null`
+    "build_id": env.CIRCLE_WORKFLOW_ID || `null`
+  }
+}

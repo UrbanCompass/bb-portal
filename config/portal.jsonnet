@@ -21,6 +21,7 @@
 local githubActionsExtractor = importstr 'gh-actions.jmespath';
 local gitlabExtractor = importstr 'gitlab.jmespath';
 local semaphoreExtractor = importstr 'semaphore.jmespath';
+local circleciExtractor = importstr 'circleci.jmespath';
 
 {
   global: {
@@ -100,7 +101,7 @@ local semaphoreExtractor = importstr 'semaphore.jmespath';
     },
     minEventBatchDuration: '0.1s',
     invocationMetadataExtractor: {
-      expression: githubActionsExtractor,
+      expression: circleciExtractor,
     },
     buildKey: "build_id",
   },
