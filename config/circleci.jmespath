@@ -3,12 +3,12 @@
   "hostname": env.HOSTNAME
   "sourceControls": [
     {
-      "repo": env.CIRCLE_PROJECT_REPONAME
-      "repoUrl": env.CIRCLE_REPOSITORY_URL
+      "repo": (env.CIRCLE_PROJECT_USERNAME && env.CIRCLE_PROJECT_REPONAME) && join('/', [env.CIRCLE_PROJECT_USERNAME, env.CIRCLE_PROJECT_REPONAME]) || env.CIRCLE_PROJECT_REPONAME
+      "repoUrl": (env.CIRCLE_PROJECT_USERNAME && env.CIRCLE_PROJECT_REPONAME) && join('/', ['https://github.com', env.CIRCLE_PROJECT_USERNAME, env.CIRCLE_PROJECT_REPONAME]) || `null`
       "ref": env.CIRCLE_BRANCH || env.CIRCLE_TAG || `null`
-      "refUrl": env.CIRCLE_PULL_REQUEST || (env.CIRCLE_REPOSITORY_URL && env.CIRCLE_BRANCH) && join('/', [env.CIRCLE_REPOSITORY_URL, 'tree', env.CIRCLE_BRANCH]) || `null`
+      "refUrl": env.CIRCLE_PULL_REQUEST || (env.CIRCLE_PROJECT_USERNAME && env.CIRCLE_PROJECT_REPONAME && env.CIRCLE_BRANCH) && join('/', ['https://github.com', env.CIRCLE_PROJECT_USERNAME, env.CIRCLE_PROJECT_REPONAME, 'tree', env.CIRCLE_BRANCH]) || `null`
       "commit": env.CIRCLE_SHA1
-      "commitUrl": (env.CIRCLE_REPOSITORY_URL && env.CIRCLE_SHA1) && join('/', [env.CIRCLE_REPOSITORY_URL, 'commit', env.CIRCLE_SHA1]) || `null`
+      "commitUrl": (env.CIRCLE_PROJECT_USERNAME && env.CIRCLE_PROJECT_REPONAME && env.CIRCLE_SHA1) && join('/', ['https://github.com', env.CIRCLE_PROJECT_USERNAME, env.CIRCLE_PROJECT_REPONAME, 'commit', env.CIRCLE_SHA1]) || `null`
     }
   ]
   "invocationTags": {
@@ -20,8 +20,8 @@
     "build_url": env.CIRCLE_BUILD_URL || `null`
   }
   "buildTags": {
-    "repo": env.CIRCLE_PROJECT_REPONAME || `null`
-    "repo_url": env.CIRCLE_REPOSITORY_URL || `null`
+    "repo": (env.CIRCLE_PROJECT_USERNAME && env.CIRCLE_PROJECT_REPONAME) && join('/', [env.CIRCLE_PROJECT_USERNAME, env.CIRCLE_PROJECT_REPONAME]) || env.CIRCLE_PROJECT_REPONAME || `null`
+    "repo_url": (env.CIRCLE_PROJECT_USERNAME && env.CIRCLE_PROJECT_REPONAME) && join('/', ['https://github.com', env.CIRCLE_PROJECT_USERNAME, env.CIRCLE_PROJECT_REPONAME]) || `null`
     "pull_request": env.CIRCLE_PULL_REQUEST || `null`
     "pull_request_url": env.CIRCLE_PULL_REQUEST || `null`
     "workflow": env.CIRCLE_WORKFLOW_ID || `null`
