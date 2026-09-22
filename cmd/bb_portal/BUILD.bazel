@@ -73,3 +73,15 @@ go_binary(
     embed = [":bb_portal_lib"],
     visibility = ["//visibility:public"],
 )
+
+# Push a single-arch image to the local kind registry for local testing.
+# Apple Silicon: bazel run //cmd/bb_portal:bb_portal_local_push --platforms=@com_github_buildbarn_bb_storage//tools/platforms:linux_arm64
+# x86_64:        bazel run //cmd/bb_portal:bb_portal_local_push --platforms=@com_github_buildbarn_bb_storage//tools/platforms:linux_amd64
+image_push(
+    name = "bb_portal_local_push",
+    image = ":_bb_portal_container.image",
+    registry = "localhost:5001",
+    repository = "bb-portal",
+    tag = "latest",
+    tags = ["manual"],
+)
