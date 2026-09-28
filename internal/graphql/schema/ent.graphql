@@ -11,6 +11,9 @@ type Action implements Node {
   endTime: Time
   failureCode: String
   failureMessage: String
+  primaryOutput: String
+  cacheStatus: String
+  sampled: Boolean
   bazelInvocation: BazelInvocation!
   configuration: Configuration!
   stdout: File
@@ -505,6 +508,49 @@ input ActionWhereInput {
   failureMessageNotNil: Boolean
   failureMessageEqualFold: String
   failureMessageContainsFold: String
+  """
+  primary_output field predicates
+  """
+  primaryOutput: String
+  primaryOutputNEQ: String
+  primaryOutputIn: [String!]
+  primaryOutputNotIn: [String!]
+  primaryOutputGT: String
+  primaryOutputGTE: String
+  primaryOutputLT: String
+  primaryOutputLTE: String
+  primaryOutputContains: String
+  primaryOutputHasPrefix: String
+  primaryOutputHasSuffix: String
+  primaryOutputIsNil: Boolean
+  primaryOutputNotNil: Boolean
+  primaryOutputEqualFold: String
+  primaryOutputContainsFold: String
+  """
+  cache_status field predicates
+  """
+  cacheStatus: String
+  cacheStatusNEQ: String
+  cacheStatusIn: [String!]
+  cacheStatusNotIn: [String!]
+  cacheStatusGT: String
+  cacheStatusGTE: String
+  cacheStatusLT: String
+  cacheStatusLTE: String
+  cacheStatusContains: String
+  cacheStatusHasPrefix: String
+  cacheStatusHasSuffix: String
+  cacheStatusIsNil: Boolean
+  cacheStatusNotNil: Boolean
+  cacheStatusEqualFold: String
+  cacheStatusContainsFold: String
+  """
+  sampled field predicates
+  """
+  sampled: Boolean
+  sampledNEQ: Boolean
+  sampledIsNil: Boolean
+  sampledNotNil: Boolean
   """
   bazel_invocation edge predicates
   """
