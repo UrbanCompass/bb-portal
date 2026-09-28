@@ -20,6 +20,9 @@ var (
 		{Name: "end_time", Type: field.TypeTime, Nullable: true},
 		{Name: "failure_code", Type: field.TypeString, Nullable: true},
 		{Name: "failure_message", Type: field.TypeString, Nullable: true},
+		{Name: "primary_output", Type: field.TypeString, Nullable: true},
+		{Name: "cache_status", Type: field.TypeString, Nullable: true},
+		{Name: "sampled", Type: field.TypeBool, Nullable: true},
 		{Name: "configuration_id", Type: field.TypeInt64},
 		{Name: "stdout_file_id", Type: field.TypeInt64, Nullable: true},
 		{Name: "stderr_file_id", Type: field.TypeInt64, Nullable: true},
@@ -33,25 +36,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "actions_configurations_configuration",
-				Columns:    []*schema.Column{ActionsColumns[10]},
+				Columns:    []*schema.Column{ActionsColumns[13]},
 				RefColumns: []*schema.Column{ConfigurationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "actions_files_stdout",
-				Columns:    []*schema.Column{ActionsColumns[11]},
+				Columns:    []*schema.Column{ActionsColumns[14]},
 				RefColumns: []*schema.Column{FilesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "actions_files_stderr",
-				Columns:    []*schema.Column{ActionsColumns[12]},
+				Columns:    []*schema.Column{ActionsColumns[15]},
 				RefColumns: []*schema.Column{FilesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "actions_bazel_invocations_actions",
-				Columns:    []*schema.Column{ActionsColumns[13]},
+				Columns:    []*schema.Column{ActionsColumns[16]},
 				RefColumns: []*schema.Column{BazelInvocationsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -63,24 +66,29 @@ var (
 				Columns: []*schema.Column{ActionsColumns[1]},
 			},
 			{
-				Name:    "action_bazel_invocation_id",
-				Unique:  false,
-				Columns: []*schema.Column{ActionsColumns[13]},
-			},
-			{
-				Name:    "action_configuration_id",
+				Name:    "action_primary_output",
 				Unique:  false,
 				Columns: []*schema.Column{ActionsColumns[10]},
 			},
 			{
+				Name:    "action_bazel_invocation_id",
+				Unique:  false,
+				Columns: []*schema.Column{ActionsColumns[16]},
+			},
+			{
+				Name:    "action_configuration_id",
+				Unique:  false,
+				Columns: []*schema.Column{ActionsColumns[13]},
+			},
+			{
 				Name:    "action_stdout_file_id",
 				Unique:  false,
-				Columns: []*schema.Column{ActionsColumns[11]},
+				Columns: []*schema.Column{ActionsColumns[14]},
 			},
 			{
 				Name:    "action_stderr_file_id",
 				Unique:  false,
-				Columns: []*schema.Column{ActionsColumns[12]},
+				Columns: []*schema.Column{ActionsColumns[15]},
 			},
 		},
 	}

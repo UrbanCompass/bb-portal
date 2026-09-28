@@ -72,6 +72,11 @@ type buildEventRecorder struct {
 	InstanceNameDbID int64
 	InvocationID     string
 	InvocationDbID   int64
+
+	// successfulActionsSeen counts successful ActionExecuted events for this
+	// invocation. Used to implement reservoir-cap sampling: only the first
+	// successfulActionSampleCap successful actions are persisted.
+	successfulActionsSeen int
 }
 
 type handledEvents struct {

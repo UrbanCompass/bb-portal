@@ -100,6 +100,21 @@ func FailureMessage(v string) predicate.Action {
 	return predicate.Action(sql.FieldEQ(FieldFailureMessage, v))
 }
 
+// PrimaryOutput applies equality check predicate on the "primary_output" field. It's identical to PrimaryOutputEQ.
+func PrimaryOutput(v string) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldPrimaryOutput, v))
+}
+
+// CacheStatus applies equality check predicate on the "cache_status" field. It's identical to CacheStatusEQ.
+func CacheStatus(v string) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldCacheStatus, v))
+}
+
+// Sampled applies equality check predicate on the "sampled" field. It's identical to SampledEQ.
+func Sampled(v bool) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldSampled, v))
+}
+
 // StdoutFileID applies equality check predicate on the "stdout_file_id" field. It's identical to StdoutFileIDEQ.
 func StdoutFileID(v int64) predicate.Action {
 	return predicate.Action(sql.FieldEQ(FieldStdoutFileID, v))
@@ -618,6 +633,176 @@ func FailureMessageEqualFold(v string) predicate.Action {
 // FailureMessageContainsFold applies the ContainsFold predicate on the "failure_message" field.
 func FailureMessageContainsFold(v string) predicate.Action {
 	return predicate.Action(sql.FieldContainsFold(FieldFailureMessage, v))
+}
+
+// PrimaryOutputEQ applies the EQ predicate on the "primary_output" field.
+func PrimaryOutputEQ(v string) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputNEQ applies the NEQ predicate on the "primary_output" field.
+func PrimaryOutputNEQ(v string) predicate.Action {
+	return predicate.Action(sql.FieldNEQ(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputIn applies the In predicate on the "primary_output" field.
+func PrimaryOutputIn(vs ...string) predicate.Action {
+	return predicate.Action(sql.FieldIn(FieldPrimaryOutput, vs...))
+}
+
+// PrimaryOutputNotIn applies the NotIn predicate on the "primary_output" field.
+func PrimaryOutputNotIn(vs ...string) predicate.Action {
+	return predicate.Action(sql.FieldNotIn(FieldPrimaryOutput, vs...))
+}
+
+// PrimaryOutputGT applies the GT predicate on the "primary_output" field.
+func PrimaryOutputGT(v string) predicate.Action {
+	return predicate.Action(sql.FieldGT(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputGTE applies the GTE predicate on the "primary_output" field.
+func PrimaryOutputGTE(v string) predicate.Action {
+	return predicate.Action(sql.FieldGTE(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputLT applies the LT predicate on the "primary_output" field.
+func PrimaryOutputLT(v string) predicate.Action {
+	return predicate.Action(sql.FieldLT(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputLTE applies the LTE predicate on the "primary_output" field.
+func PrimaryOutputLTE(v string) predicate.Action {
+	return predicate.Action(sql.FieldLTE(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputContains applies the Contains predicate on the "primary_output" field.
+func PrimaryOutputContains(v string) predicate.Action {
+	return predicate.Action(sql.FieldContains(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputHasPrefix applies the HasPrefix predicate on the "primary_output" field.
+func PrimaryOutputHasPrefix(v string) predicate.Action {
+	return predicate.Action(sql.FieldHasPrefix(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputHasSuffix applies the HasSuffix predicate on the "primary_output" field.
+func PrimaryOutputHasSuffix(v string) predicate.Action {
+	return predicate.Action(sql.FieldHasSuffix(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputIsNil applies the IsNil predicate on the "primary_output" field.
+func PrimaryOutputIsNil() predicate.Action {
+	return predicate.Action(sql.FieldIsNull(FieldPrimaryOutput))
+}
+
+// PrimaryOutputNotNil applies the NotNil predicate on the "primary_output" field.
+func PrimaryOutputNotNil() predicate.Action {
+	return predicate.Action(sql.FieldNotNull(FieldPrimaryOutput))
+}
+
+// PrimaryOutputEqualFold applies the EqualFold predicate on the "primary_output" field.
+func PrimaryOutputEqualFold(v string) predicate.Action {
+	return predicate.Action(sql.FieldEqualFold(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputContainsFold applies the ContainsFold predicate on the "primary_output" field.
+func PrimaryOutputContainsFold(v string) predicate.Action {
+	return predicate.Action(sql.FieldContainsFold(FieldPrimaryOutput, v))
+}
+
+// CacheStatusEQ applies the EQ predicate on the "cache_status" field.
+func CacheStatusEQ(v string) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldCacheStatus, v))
+}
+
+// CacheStatusNEQ applies the NEQ predicate on the "cache_status" field.
+func CacheStatusNEQ(v string) predicate.Action {
+	return predicate.Action(sql.FieldNEQ(FieldCacheStatus, v))
+}
+
+// CacheStatusIn applies the In predicate on the "cache_status" field.
+func CacheStatusIn(vs ...string) predicate.Action {
+	return predicate.Action(sql.FieldIn(FieldCacheStatus, vs...))
+}
+
+// CacheStatusNotIn applies the NotIn predicate on the "cache_status" field.
+func CacheStatusNotIn(vs ...string) predicate.Action {
+	return predicate.Action(sql.FieldNotIn(FieldCacheStatus, vs...))
+}
+
+// CacheStatusGT applies the GT predicate on the "cache_status" field.
+func CacheStatusGT(v string) predicate.Action {
+	return predicate.Action(sql.FieldGT(FieldCacheStatus, v))
+}
+
+// CacheStatusGTE applies the GTE predicate on the "cache_status" field.
+func CacheStatusGTE(v string) predicate.Action {
+	return predicate.Action(sql.FieldGTE(FieldCacheStatus, v))
+}
+
+// CacheStatusLT applies the LT predicate on the "cache_status" field.
+func CacheStatusLT(v string) predicate.Action {
+	return predicate.Action(sql.FieldLT(FieldCacheStatus, v))
+}
+
+// CacheStatusLTE applies the LTE predicate on the "cache_status" field.
+func CacheStatusLTE(v string) predicate.Action {
+	return predicate.Action(sql.FieldLTE(FieldCacheStatus, v))
+}
+
+// CacheStatusContains applies the Contains predicate on the "cache_status" field.
+func CacheStatusContains(v string) predicate.Action {
+	return predicate.Action(sql.FieldContains(FieldCacheStatus, v))
+}
+
+// CacheStatusHasPrefix applies the HasPrefix predicate on the "cache_status" field.
+func CacheStatusHasPrefix(v string) predicate.Action {
+	return predicate.Action(sql.FieldHasPrefix(FieldCacheStatus, v))
+}
+
+// CacheStatusHasSuffix applies the HasSuffix predicate on the "cache_status" field.
+func CacheStatusHasSuffix(v string) predicate.Action {
+	return predicate.Action(sql.FieldHasSuffix(FieldCacheStatus, v))
+}
+
+// CacheStatusIsNil applies the IsNil predicate on the "cache_status" field.
+func CacheStatusIsNil() predicate.Action {
+	return predicate.Action(sql.FieldIsNull(FieldCacheStatus))
+}
+
+// CacheStatusNotNil applies the NotNil predicate on the "cache_status" field.
+func CacheStatusNotNil() predicate.Action {
+	return predicate.Action(sql.FieldNotNull(FieldCacheStatus))
+}
+
+// CacheStatusEqualFold applies the EqualFold predicate on the "cache_status" field.
+func CacheStatusEqualFold(v string) predicate.Action {
+	return predicate.Action(sql.FieldEqualFold(FieldCacheStatus, v))
+}
+
+// CacheStatusContainsFold applies the ContainsFold predicate on the "cache_status" field.
+func CacheStatusContainsFold(v string) predicate.Action {
+	return predicate.Action(sql.FieldContainsFold(FieldCacheStatus, v))
+}
+
+// SampledEQ applies the EQ predicate on the "sampled" field.
+func SampledEQ(v bool) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldSampled, v))
+}
+
+// SampledNEQ applies the NEQ predicate on the "sampled" field.
+func SampledNEQ(v bool) predicate.Action {
+	return predicate.Action(sql.FieldNEQ(FieldSampled, v))
+}
+
+// SampledIsNil applies the IsNil predicate on the "sampled" field.
+func SampledIsNil() predicate.Action {
+	return predicate.Action(sql.FieldIsNull(FieldSampled))
+}
+
+// SampledNotNil applies the NotNil predicate on the "sampled" field.
+func SampledNotNil() predicate.Action {
+	return predicate.Action(sql.FieldNotNull(FieldSampled))
 }
 
 // StdoutFileIDEQ applies the EQ predicate on the "stdout_file_id" field.

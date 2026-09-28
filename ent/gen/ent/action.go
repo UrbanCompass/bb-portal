@@ -43,6 +43,12 @@ type Action struct {
 	FailureCode string `json:"failure_code,omitempty"`
 	// FailureMessage holds the value of the "failure_message" field.
 	FailureMessage string `json:"failure_message,omitempty"`
+	// PrimaryOutput holds the value of the "primary_output" field.
+	PrimaryOutput string `json:"primary_output,omitempty"`
+	// CacheStatus holds the value of the "cache_status" field.
+	CacheStatus string `json:"cache_status,omitempty"`
+	// Sampled holds the value of the "sampled" field.
+	Sampled bool `json:"sampled,omitempty"`
 	// StdoutFileID holds the value of the "stdout_file_id" field.
 	StdoutFileID int64 `json:"stdout_file_id,omitempty"`
 	// StderrFileID holds the value of the "stderr_file_id" field.
@@ -121,11 +127,11 @@ func (*Action) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case action.FieldCommandLine:
 			values[i] = new([]byte)
-		case action.FieldSuccess:
+		case action.FieldSuccess, action.FieldSampled:
 			values[i] = new(sql.NullBool)
 		case action.FieldID, action.FieldBazelInvocationID, action.FieldConfigurationID, action.FieldExitCode, action.FieldStdoutFileID, action.FieldStderrFileID:
 			values[i] = new(sql.NullInt64)
-		case action.FieldLabel, action.FieldType, action.FieldFailureCode, action.FieldFailureMessage:
+		case action.FieldLabel, action.FieldType, action.FieldFailureCode, action.FieldFailureMessage, action.FieldPrimaryOutput, action.FieldCacheStatus:
 			values[i] = new(sql.NullString)
 		case action.FieldStartTime, action.FieldEndTime:
 			values[i] = new(sql.NullTime)
@@ -217,6 +223,24 @@ func (_m *Action) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field failure_message", values[i])
 			} else if value.Valid {
 				_m.FailureMessage = value.String
+			}
+		case action.FieldPrimaryOutput:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field primary_output", values[i])
+			} else if value.Valid {
+				_m.PrimaryOutput = value.String
+			}
+		case action.FieldCacheStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field cache_status", values[i])
+			} else if value.Valid {
+				_m.CacheStatus = value.String
+			}
+		case action.FieldSampled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field sampled", values[i])
+			} else if value.Valid {
+				_m.Sampled = value.Bool
 			}
 		case action.FieldStdoutFileID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -318,6 +342,15 @@ func (_m *Action) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("failure_message=")
 	builder.WriteString(_m.FailureMessage)
+	builder.WriteString(", ")
+	builder.WriteString("primary_output=")
+	builder.WriteString(_m.PrimaryOutput)
+	builder.WriteString(", ")
+	builder.WriteString("cache_status=")
+	builder.WriteString(_m.CacheStatus)
+	builder.WriteString(", ")
+	builder.WriteString("sampled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Sampled))
 	builder.WriteString(", ")
 	builder.WriteString("stdout_file_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.StdoutFileID))
