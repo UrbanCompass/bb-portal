@@ -179,6 +179,21 @@ func (_q *ActionQuery) collectField(ctx context.Context, oneNode bool, opCtx *gr
 				selectedFields = append(selectedFields, action.FieldFailureMessage)
 				fieldSeen[action.FieldFailureMessage] = struct{}{}
 			}
+		case "primaryOutput":
+			if _, ok := fieldSeen[action.FieldPrimaryOutput]; !ok {
+				selectedFields = append(selectedFields, action.FieldPrimaryOutput)
+				fieldSeen[action.FieldPrimaryOutput] = struct{}{}
+			}
+		case "cacheStatus":
+			if _, ok := fieldSeen[action.FieldCacheStatus]; !ok {
+				selectedFields = append(selectedFields, action.FieldCacheStatus)
+				fieldSeen[action.FieldCacheStatus] = struct{}{}
+			}
+		case "sampled":
+			if _, ok := fieldSeen[action.FieldSampled]; !ok {
+				selectedFields = append(selectedFields, action.FieldSampled)
+				fieldSeen[action.FieldSampled] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:
