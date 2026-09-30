@@ -31,10 +31,11 @@ import { PortalCard } from "@/components/PortalCard";
 import PortalDuration from "@/components/PortalDuration";
 import { getFragmentData, gql } from "@/graphql/__generated__";
 import type {
-  ActionCompareFragment,
   InvocationCompareDataFragment,
   RunnerCount,
 } from "@/graphql/__generated__/graphql";
+import { buildJoinedRows } from "@/utils/actionComparison";
+import type { JoinedActionRow } from "@/utils/actionComparison";
 import { generatePageTitle } from "@/utils/generatePageTitle";
 import { readableDurationFromMilliseconds } from "@/utils/time";
 import z from "zod";
@@ -473,67 +474,6 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
 
 // ─── Action Comparison Panel ────────────────────────────────────────────────
 
-type ActionRow = ActionCompareFragment;
-
-interface JoinedActionRow {
-  key: string;
-  label: string;
-  mnemonic: string | null | undefined;
-  primaryOutput: string | null | undefined;
-  leftStatus: string | null | undefined;
-  rightStatus: string | null | undefined;
-  onLeft: boolean;
-  onRight: boolean;
-}
-
-function joinKey(a: ActionRow): string {
-  return `${a.label}||${a.type ?? ""}||${a.primaryOutput ?? ""}`;
-}
-
-function buildJoinedRows(
-  leftActions: ActionRow[],
-  rightActions: ActionRow[],
-): JoinedActionRow[] {
-  const leftMap = new Map<string, ActionRow>();
-  for (const a of leftActions) leftMap.set(joinKey(a), a);
-
-  const rightMap = new Map<string, ActionRow>();
-  for (const a of rightActions) rightMap.set(joinKey(a), a);
-
-  const allKeys = new Set([...leftMap.keys(), ...rightMap.keys()]);
-  const rows: JoinedActionRow[] = [];
-
-  for (const k of allKeys) {
-    const l = leftMap.get(k);
-    const r = rightMap.get(k);
-    const ref = l ?? r!;
-    rows.push({
-      key: k,
-      label: ref.label,
-      mnemonic: ref.type,
-      primaryOutput: ref.primaryOutput,
-      leftStatus: l?.cacheStatus ?? null,
-      rightStatus: r?.cacheStatus ?? null,
-      onLeft: !!l,
-      onRight: !!r,
-    });
-  }
-
-  // Sort: differing status first, then matched, then one-sided
-  rows.sort((a, b) => {
-    const aDiff = a.onLeft && a.onRight && a.leftStatus !== a.rightStatus;
-    const bDiff = b.onLeft && b.onRight && b.leftStatus !== b.rightStatus;
-    if (aDiff && !bDiff) return -1;
-    if (!aDiff && bDiff) return 1;
-    const aBoth = a.onLeft && a.onRight;
-    const bBoth = b.onLeft && b.onRight;
-    if (aBoth && !bBoth) return -1;
-    if (!aBoth && bBoth) return 1;
-    return a.label.localeCompare(b.label);
-  });
-
-  return rows;
-}
 
 function CacheStatusCell({
   status,
