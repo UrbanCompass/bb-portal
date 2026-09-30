@@ -23,6 +23,22 @@
       "name": ""
     },
     "invocationID": "64719226-555e-494d-9918-0fd25d468b1e",
+    "metrics": {
+      "actionSummary": {
+        "runnerCount": [
+          {
+            "actionsExecuted": 41,
+            "id": "UnVubmVyQ291bnQ6MTk=",
+            "name": "total"
+          },
+          {
+            "actionsExecuted": 71,
+            "id": "UnVubmVyQ291bnQ6MjA=",
+            "name": "processwrapper-sandbox"
+          }
+        ]
+      }
+    },
     "numFetches": 0,
     "originalCommandLine": {
       "command": "test",
