@@ -12,6 +12,7 @@
       "name": ""
     },
     "invocationID": "63500331-1b71-4d7a-9125-df9b3dfe4e0d",
+    "metrics": null,
     "numFetches": 0,
     "originalCommandLine": {
       "command": "build",

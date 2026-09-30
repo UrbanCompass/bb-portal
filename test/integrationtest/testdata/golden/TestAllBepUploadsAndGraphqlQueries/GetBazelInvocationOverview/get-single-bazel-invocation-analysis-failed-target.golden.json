@@ -23,6 +23,27 @@
       "name": ""
     },
     "invocationID": "571d0839-fd63-4442-bb4d-61f7bfa4ddae",
+    "metrics": {
+      "actionSummary": {
+        "runnerCount": [
+          {
+            "actionsExecuted": 2,
+            "id": "UnVubmVyQ291bnQ6MTI=",
+            "name": "total"
+          },
+          {
+            "actionsExecuted": 1,
+            "id": "UnVubmVyQ291bnQ6MTM=",
+            "name": "internal"
+          },
+          {
+            "actionsExecuted": 1,
+            "id": "UnVubmVyQ291bnQ6MTQ=",
+            "name": "darwin-sandbox"
+          }
+        ]
+      }
+    },
     "numFetches": 0,
     "originalCommandLine": {
       "command": "test",
