@@ -72,6 +72,16 @@ type buildEventRecorder struct {
 	InstanceNameDbID int64
 	InvocationID     string
 	InvocationDbID   int64
+
+	// successfulActionsSeen is the total number of successful ActionExecuted
+	// events seen so far for this invocation. Used as the population counter
+	// in Algorithm R reservoir sampling.
+	successfulActionsSeen int
+	// reservoirIDs holds the DB IDs of the up-to-successfulActionSampleCap
+	// successful actions currently selected into the reservoir. When a new
+	// action displaces a reservoir slot, the evicted record is updated to
+	// sampled=false so the DB reflects the current reservoir state.
+	reservoirIDs []int64
 }
 
 type handledEvents struct {

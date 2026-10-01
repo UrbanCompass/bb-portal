@@ -147,6 +147,48 @@ func (_c *ActionCreate) SetNillableFailureMessage(v *string) *ActionCreate {
 	return _c
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (_c *ActionCreate) SetPrimaryOutput(v string) *ActionCreate {
+	_c.mutation.SetPrimaryOutput(v)
+	return _c
+}
+
+// SetNillablePrimaryOutput sets the "primary_output" field if the given value is not nil.
+func (_c *ActionCreate) SetNillablePrimaryOutput(v *string) *ActionCreate {
+	if v != nil {
+		_c.SetPrimaryOutput(*v)
+	}
+	return _c
+}
+
+// SetCacheStatus sets the "cache_status" field.
+func (_c *ActionCreate) SetCacheStatus(v string) *ActionCreate {
+	_c.mutation.SetCacheStatus(v)
+	return _c
+}
+
+// SetNillableCacheStatus sets the "cache_status" field if the given value is not nil.
+func (_c *ActionCreate) SetNillableCacheStatus(v *string) *ActionCreate {
+	if v != nil {
+		_c.SetCacheStatus(*v)
+	}
+	return _c
+}
+
+// SetSampled sets the "sampled" field.
+func (_c *ActionCreate) SetSampled(v bool) *ActionCreate {
+	_c.mutation.SetSampled(v)
+	return _c
+}
+
+// SetNillableSampled sets the "sampled" field if the given value is not nil.
+func (_c *ActionCreate) SetNillableSampled(v *bool) *ActionCreate {
+	if v != nil {
+		_c.SetSampled(*v)
+	}
+	return _c
+}
+
 // SetStdoutFileID sets the "stdout_file_id" field.
 func (_c *ActionCreate) SetStdoutFileID(v int64) *ActionCreate {
 	_c.mutation.SetStdoutFileID(v)
@@ -346,6 +388,18 @@ func (_c *ActionCreate) createSpec() (*Action, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.FailureMessage(); ok {
 		_spec.SetField(action.FieldFailureMessage, field.TypeString, value)
 		_node.FailureMessage = value
+	}
+	if value, ok := _c.mutation.PrimaryOutput(); ok {
+		_spec.SetField(action.FieldPrimaryOutput, field.TypeString, value)
+		_node.PrimaryOutput = value
+	}
+	if value, ok := _c.mutation.CacheStatus(); ok {
+		_spec.SetField(action.FieldCacheStatus, field.TypeString, value)
+		_node.CacheStatus = value
+	}
+	if value, ok := _c.mutation.Sampled(); ok {
+		_spec.SetField(action.FieldSampled, field.TypeBool, value)
+		_node.Sampled = value
 	}
 	if nodes := _c.mutation.BazelInvocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -629,6 +683,60 @@ func (u *ActionUpsert) ClearFailureMessage() *ActionUpsert {
 	return u
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (u *ActionUpsert) SetPrimaryOutput(v string) *ActionUpsert {
+	u.Set(action.FieldPrimaryOutput, v)
+	return u
+}
+
+// UpdatePrimaryOutput sets the "primary_output" field to the value that was provided on create.
+func (u *ActionUpsert) UpdatePrimaryOutput() *ActionUpsert {
+	u.SetExcluded(action.FieldPrimaryOutput)
+	return u
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (u *ActionUpsert) ClearPrimaryOutput() *ActionUpsert {
+	u.SetNull(action.FieldPrimaryOutput)
+	return u
+}
+
+// SetCacheStatus sets the "cache_status" field.
+func (u *ActionUpsert) SetCacheStatus(v string) *ActionUpsert {
+	u.Set(action.FieldCacheStatus, v)
+	return u
+}
+
+// UpdateCacheStatus sets the "cache_status" field to the value that was provided on create.
+func (u *ActionUpsert) UpdateCacheStatus() *ActionUpsert {
+	u.SetExcluded(action.FieldCacheStatus)
+	return u
+}
+
+// ClearCacheStatus clears the value of the "cache_status" field.
+func (u *ActionUpsert) ClearCacheStatus() *ActionUpsert {
+	u.SetNull(action.FieldCacheStatus)
+	return u
+}
+
+// SetSampled sets the "sampled" field.
+func (u *ActionUpsert) SetSampled(v bool) *ActionUpsert {
+	u.Set(action.FieldSampled, v)
+	return u
+}
+
+// UpdateSampled sets the "sampled" field to the value that was provided on create.
+func (u *ActionUpsert) UpdateSampled() *ActionUpsert {
+	u.SetExcluded(action.FieldSampled)
+	return u
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (u *ActionUpsert) ClearSampled() *ActionUpsert {
+	u.SetNull(action.FieldSampled)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -875,6 +983,69 @@ func (u *ActionUpsertOne) UpdateFailureMessage() *ActionUpsertOne {
 func (u *ActionUpsertOne) ClearFailureMessage() *ActionUpsertOne {
 	return u.Update(func(s *ActionUpsert) {
 		s.ClearFailureMessage()
+	})
+}
+
+// SetPrimaryOutput sets the "primary_output" field.
+func (u *ActionUpsertOne) SetPrimaryOutput(v string) *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetPrimaryOutput(v)
+	})
+}
+
+// UpdatePrimaryOutput sets the "primary_output" field to the value that was provided on create.
+func (u *ActionUpsertOne) UpdatePrimaryOutput() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdatePrimaryOutput()
+	})
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (u *ActionUpsertOne) ClearPrimaryOutput() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearPrimaryOutput()
+	})
+}
+
+// SetCacheStatus sets the "cache_status" field.
+func (u *ActionUpsertOne) SetCacheStatus(v string) *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetCacheStatus(v)
+	})
+}
+
+// UpdateCacheStatus sets the "cache_status" field to the value that was provided on create.
+func (u *ActionUpsertOne) UpdateCacheStatus() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdateCacheStatus()
+	})
+}
+
+// ClearCacheStatus clears the value of the "cache_status" field.
+func (u *ActionUpsertOne) ClearCacheStatus() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearCacheStatus()
+	})
+}
+
+// SetSampled sets the "sampled" field.
+func (u *ActionUpsertOne) SetSampled(v bool) *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetSampled(v)
+	})
+}
+
+// UpdateSampled sets the "sampled" field to the value that was provided on create.
+func (u *ActionUpsertOne) UpdateSampled() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdateSampled()
+	})
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (u *ActionUpsertOne) ClearSampled() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearSampled()
 	})
 }
 
@@ -1289,6 +1460,69 @@ func (u *ActionUpsertBulk) UpdateFailureMessage() *ActionUpsertBulk {
 func (u *ActionUpsertBulk) ClearFailureMessage() *ActionUpsertBulk {
 	return u.Update(func(s *ActionUpsert) {
 		s.ClearFailureMessage()
+	})
+}
+
+// SetPrimaryOutput sets the "primary_output" field.
+func (u *ActionUpsertBulk) SetPrimaryOutput(v string) *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetPrimaryOutput(v)
+	})
+}
+
+// UpdatePrimaryOutput sets the "primary_output" field to the value that was provided on create.
+func (u *ActionUpsertBulk) UpdatePrimaryOutput() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdatePrimaryOutput()
+	})
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (u *ActionUpsertBulk) ClearPrimaryOutput() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearPrimaryOutput()
+	})
+}
+
+// SetCacheStatus sets the "cache_status" field.
+func (u *ActionUpsertBulk) SetCacheStatus(v string) *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetCacheStatus(v)
+	})
+}
+
+// UpdateCacheStatus sets the "cache_status" field to the value that was provided on create.
+func (u *ActionUpsertBulk) UpdateCacheStatus() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdateCacheStatus()
+	})
+}
+
+// ClearCacheStatus clears the value of the "cache_status" field.
+func (u *ActionUpsertBulk) ClearCacheStatus() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearCacheStatus()
+	})
+}
+
+// SetSampled sets the "sampled" field.
+func (u *ActionUpsertBulk) SetSampled(v bool) *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetSampled(v)
+	})
+}
+
+// UpdateSampled sets the "sampled" field to the value that was provided on create.
+func (u *ActionUpsertBulk) UpdateSampled() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdateSampled()
+	})
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (u *ActionUpsertBulk) ClearSampled() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearSampled()
 	})
 }
 

@@ -208,6 +208,66 @@ func (_u *ActionUpdate) ClearFailureMessage() *ActionUpdate {
 	return _u
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (_u *ActionUpdate) SetPrimaryOutput(v string) *ActionUpdate {
+	_u.mutation.SetPrimaryOutput(v)
+	return _u
+}
+
+// SetNillablePrimaryOutput sets the "primary_output" field if the given value is not nil.
+func (_u *ActionUpdate) SetNillablePrimaryOutput(v *string) *ActionUpdate {
+	if v != nil {
+		_u.SetPrimaryOutput(*v)
+	}
+	return _u
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (_u *ActionUpdate) ClearPrimaryOutput() *ActionUpdate {
+	_u.mutation.ClearPrimaryOutput()
+	return _u
+}
+
+// SetCacheStatus sets the "cache_status" field.
+func (_u *ActionUpdate) SetCacheStatus(v string) *ActionUpdate {
+	_u.mutation.SetCacheStatus(v)
+	return _u
+}
+
+// SetNillableCacheStatus sets the "cache_status" field if the given value is not nil.
+func (_u *ActionUpdate) SetNillableCacheStatus(v *string) *ActionUpdate {
+	if v != nil {
+		_u.SetCacheStatus(*v)
+	}
+	return _u
+}
+
+// ClearCacheStatus clears the value of the "cache_status" field.
+func (_u *ActionUpdate) ClearCacheStatus() *ActionUpdate {
+	_u.mutation.ClearCacheStatus()
+	return _u
+}
+
+// SetSampled sets the "sampled" field.
+func (_u *ActionUpdate) SetSampled(v bool) *ActionUpdate {
+	_u.mutation.SetSampled(v)
+	return _u
+}
+
+// SetNillableSampled sets the "sampled" field if the given value is not nil.
+func (_u *ActionUpdate) SetNillableSampled(v *bool) *ActionUpdate {
+	if v != nil {
+		_u.SetSampled(*v)
+	}
+	return _u
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (_u *ActionUpdate) ClearSampled() *ActionUpdate {
+	_u.mutation.ClearSampled()
+	return _u
+}
+
 // Mutation returns the ActionMutation object of the builder.
 func (_u *ActionUpdate) Mutation() *ActionMutation {
 	return _u.mutation
@@ -321,6 +381,24 @@ func (_u *ActionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.FailureMessageCleared() {
 		_spec.ClearField(action.FieldFailureMessage, field.TypeString)
+	}
+	if value, ok := _u.mutation.PrimaryOutput(); ok {
+		_spec.SetField(action.FieldPrimaryOutput, field.TypeString, value)
+	}
+	if _u.mutation.PrimaryOutputCleared() {
+		_spec.ClearField(action.FieldPrimaryOutput, field.TypeString)
+	}
+	if value, ok := _u.mutation.CacheStatus(); ok {
+		_spec.SetField(action.FieldCacheStatus, field.TypeString, value)
+	}
+	if _u.mutation.CacheStatusCleared() {
+		_spec.ClearField(action.FieldCacheStatus, field.TypeString)
+	}
+	if value, ok := _u.mutation.Sampled(); ok {
+		_spec.SetField(action.FieldSampled, field.TypeBool, value)
+	}
+	if _u.mutation.SampledCleared() {
+		_spec.ClearField(action.FieldSampled, field.TypeBool)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -521,6 +599,66 @@ func (_u *ActionUpdateOne) ClearFailureMessage() *ActionUpdateOne {
 	return _u
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (_u *ActionUpdateOne) SetPrimaryOutput(v string) *ActionUpdateOne {
+	_u.mutation.SetPrimaryOutput(v)
+	return _u
+}
+
+// SetNillablePrimaryOutput sets the "primary_output" field if the given value is not nil.
+func (_u *ActionUpdateOne) SetNillablePrimaryOutput(v *string) *ActionUpdateOne {
+	if v != nil {
+		_u.SetPrimaryOutput(*v)
+	}
+	return _u
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (_u *ActionUpdateOne) ClearPrimaryOutput() *ActionUpdateOne {
+	_u.mutation.ClearPrimaryOutput()
+	return _u
+}
+
+// SetCacheStatus sets the "cache_status" field.
+func (_u *ActionUpdateOne) SetCacheStatus(v string) *ActionUpdateOne {
+	_u.mutation.SetCacheStatus(v)
+	return _u
+}
+
+// SetNillableCacheStatus sets the "cache_status" field if the given value is not nil.
+func (_u *ActionUpdateOne) SetNillableCacheStatus(v *string) *ActionUpdateOne {
+	if v != nil {
+		_u.SetCacheStatus(*v)
+	}
+	return _u
+}
+
+// ClearCacheStatus clears the value of the "cache_status" field.
+func (_u *ActionUpdateOne) ClearCacheStatus() *ActionUpdateOne {
+	_u.mutation.ClearCacheStatus()
+	return _u
+}
+
+// SetSampled sets the "sampled" field.
+func (_u *ActionUpdateOne) SetSampled(v bool) *ActionUpdateOne {
+	_u.mutation.SetSampled(v)
+	return _u
+}
+
+// SetNillableSampled sets the "sampled" field if the given value is not nil.
+func (_u *ActionUpdateOne) SetNillableSampled(v *bool) *ActionUpdateOne {
+	if v != nil {
+		_u.SetSampled(*v)
+	}
+	return _u
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (_u *ActionUpdateOne) ClearSampled() *ActionUpdateOne {
+	_u.mutation.ClearSampled()
+	return _u
+}
+
 // Mutation returns the ActionMutation object of the builder.
 func (_u *ActionUpdateOne) Mutation() *ActionMutation {
 	return _u.mutation
@@ -664,6 +802,24 @@ func (_u *ActionUpdateOne) sqlSave(ctx context.Context) (_node *Action, err erro
 	}
 	if _u.mutation.FailureMessageCleared() {
 		_spec.ClearField(action.FieldFailureMessage, field.TypeString)
+	}
+	if value, ok := _u.mutation.PrimaryOutput(); ok {
+		_spec.SetField(action.FieldPrimaryOutput, field.TypeString, value)
+	}
+	if _u.mutation.PrimaryOutputCleared() {
+		_spec.ClearField(action.FieldPrimaryOutput, field.TypeString)
+	}
+	if value, ok := _u.mutation.CacheStatus(); ok {
+		_spec.SetField(action.FieldCacheStatus, field.TypeString, value)
+	}
+	if _u.mutation.CacheStatusCleared() {
+		_spec.ClearField(action.FieldCacheStatus, field.TypeString)
+	}
+	if value, ok := _u.mutation.Sampled(); ok {
+		_spec.SetField(action.FieldSampled, field.TypeBool, value)
+	}
+	if _u.mutation.SampledCleared() {
+		_spec.ClearField(action.FieldSampled, field.TypeBool)
 	}
 	_node = &Action{config: _u.config}
 	_spec.Assign = _node.assignValues
