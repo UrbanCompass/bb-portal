@@ -1,4 +1,4 @@
-load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "prometheusservice",
@@ -9,5 +9,15 @@ go_library(
         "@com_github_gorilla_mux//:mux",
         "@org_golang_google_grpc//codes",
         "@org_golang_google_grpc//status",
+    ],
+)
+
+go_test(
+    name = "prometheusservice_test",
+    srcs = ["prometheus_service_test.go"],
+    embed = [":prometheusservice"],
+    deps = [
+        "@com_github_gorilla_mux//:mux",
+        "@com_github_stretchr_testify//require",
     ],
 )
