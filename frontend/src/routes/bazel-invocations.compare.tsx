@@ -334,7 +334,7 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
             to="/bazel-invocations/$invocationID"
             params={{ invocationID: invocation.invocationID }}
           >
-            <Typography.Text code style={{ fontSize: 12 }}>
+            <Typography.Text code style={{ fontSize: 12, verticalAlign: "middle" }}>
               {invocation.invocationID}
             </Typography.Text>
           </Link>
