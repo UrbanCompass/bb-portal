@@ -2,6 +2,7 @@ package buildeventrecorder
 
 import (
 	"context"
+	"math/rand"
 	"reflect"
 	"strings"
 
@@ -97,13 +98,26 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 		return nil
 	}
 
-	// Successful actions are sampled: persist only the first
-	// successfulActionSampleCap per invocation to bound storage growth.
+	// Algorithm R reservoir sampling for successful actions.
+	// Every successful action has an equal 1-in-N probability of being in
+	// the final sample of size successfulActionSampleCap, regardless of
+	// arrival order.
+	var reservoirSlot int = -1 // -1 means: do not persist this action
 	if actionExecuted.Success {
-		if r.successfulActionsSeen >= successfulActionSampleCap {
+		r.successfulActionsSeen++
+		n := r.successfulActionsSeen
+		if n <= successfulActionSampleCap {
+			// Reservoir not yet full — always include.
+			reservoirSlot = n - 1
+		} else {
+			// Reservoir full — include with probability k/n.
+			if j := rand.Intn(n); j < successfulActionSampleCap {
+				reservoirSlot = j
+			}
+		}
+		if reservoirSlot < 0 {
 			return nil
 		}
-		r.successfulActionsSeen++
 	}
 
 	create := tx.Ent().Action.Create().
@@ -174,8 +188,23 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 			create.SetStderrID(fileDbID)
 		}
 	}
-	if err := create.Exec(ctx); err != nil {
+	action, err := create.Save(ctx)
+	if err != nil {
 		return util.StatusWrap(err, "failed to save Action")
 	}
+
+	// Update reservoir tracking for sampled successful actions.
+	if reservoirSlot >= 0 {
+		if reservoirSlot < len(r.reservoirIDs) {
+			// Displace: evict the previously sampled action at this slot.
+			if err := tx.Ent().Action.UpdateOneID(r.reservoirIDs[reservoirSlot]).SetSampled(false).Exec(ctx); err != nil {
+				return util.StatusWrap(err, "failed to evict displaced Action from reservoir")
+			}
+			r.reservoirIDs[reservoirSlot] = action.ID
+		} else {
+			r.reservoirIDs = append(r.reservoirIDs, action.ID)
+		}
+	}
+
 	return nil
 }

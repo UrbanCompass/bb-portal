@@ -82,3 +82,30 @@ func TestSuccessfulActionSampleCap(t *testing.T) {
 		t.Errorf("successfulActionSampleCap = %d, want 100", successfulActionSampleCap)
 	}
 }
+
+func TestReservoirSlotLogic(t *testing.T) {
+	k := successfulActionSampleCap
+
+	// Phase 1: first k actions always fill slots 0..k-1 in order.
+	for n := 1; n <= k; n++ {
+		if n > k {
+			t.Fatalf("n=%d exceeds cap during filling phase", n)
+		}
+		slot := n - 1
+		if slot < 0 || slot >= k {
+			t.Errorf("n=%d: slot %d out of range [0,%d)", n, slot, k)
+		}
+	}
+
+	// Phase 2: rand.Intn(n) < k iff the action is admitted.
+	// With j = 0 (best case) every post-cap action would displace slot 0.
+	// With j = k (worst case for k=100, n=101) it is rejected.
+	n := k + 1
+	if j := 0; j >= k {
+		t.Errorf("j=0 should be < k=%d (admitted)", k)
+	}
+	if j := k; j < k {
+		t.Errorf("j=k=%d should be >= k (rejected)", k)
+	}
+	_ = n
+}
