@@ -16,8 +16,8 @@ func (r *buildEventRecorder) saveOptionsParsed(ctx context.Context, tx *ent.Clie
 	err := tx.BazelInvocation.
 		UpdateOneID(r.InvocationDbID).
 		SetOptionsParsed(&invocation.ParsedCommandLineOptions{
-			ExplicitOptions: optionsParsed.ExplicitCmdLine,
-			Options:         optionsParsed.CmdLine,
+			ExplicitOptions: invocation.RedactRawOptions(optionsParsed.ExplicitCmdLine),
+			Options:         invocation.RedactRawOptions(optionsParsed.CmdLine),
 		}).Exec(ctx)
 	if err != nil {
 		return util.StatusWrap(err, "Could not parse options")
