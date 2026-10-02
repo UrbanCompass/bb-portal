@@ -1,8 +1,20 @@
-load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "invocation",
-    srcs = ["command_line.go"],
+    srcs = [
+        "command_line.go",
+        "redact.go",
+    ],
     importpath = "github.com/buildbarn/bb-portal/pkg/invocation",
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "invocation_test",
+    srcs = ["redact_test.go"],
+    deps = [
+        ":invocation",
+        "@com_github_stretchr_testify//require",
+    ],
 )

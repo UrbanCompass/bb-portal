@@ -266,7 +266,7 @@ func parseSections(buildEventSections []*bes.CommandLineSection) (envVars map[st
 			envVars = parseEnvVarsFromSectionOptions(section)
 		case "residual":
 			if list := section.GetChunkList(); list != nil {
-				data.Residual = append(data.Residual, list.Chunk...)
+				data.Residual = append(data.Residual, invocation.RedactRawOptions(list.Chunk)...)
 			}
 		}
 	}
@@ -283,7 +283,7 @@ func extractOptions(protoOptions []*bes.Option) []invocation.CommandLineOption {
 		}
 		result = append(result, invocation.CommandLineOption{
 			Option: opt.GetOptionName(),
-			Value:  opt.GetOptionValue(),
+			Value:  invocation.RedactOptionValue(opt.GetOptionName(), opt.GetOptionValue()),
 		})
 	}
 	return result
