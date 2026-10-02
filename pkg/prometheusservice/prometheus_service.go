@@ -10,9 +10,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// NewPrometheusService registers a reverse-proxy handler at
-// /api/v1/prometheus/* that forwards requests to the configured Prometheus URL.
-// This lets the frontend query Prometheus without direct cluster access or CORS issues.
+const routePrefix = "/api/v1/prometheus"
+
+// Only read-only query endpoints are proxied. Prometheus may run with
+// --web.enable-lifecycle or the OTLP/remote-write receivers enabled, and
+// exposing those through the portal would let any user (or a cross-site
+// form POST) shut it down or inject series.
+var allowedPaths = []string{
+	"/api/v1/query",
+	"/api/v1/query_range",
+}
+
+// NewPrometheusService registers a reverse-proxy handler for GET requests
+// to /api/v1/prometheus/api/v1/{query,query_range} that forwards them to
+// the configured Prometheus URL. This lets the frontend query Prometheus
+// without direct cluster access or CORS issues.
 func NewPrometheusService(prometheusURL string, router *mux.Router) error {
 	target, err := url.Parse(prometheusURL)
 	if err != nil {
@@ -39,8 +51,9 @@ func NewPrometheusService(prometheusURL string, router *mux.Router) error {
 	}
 	// Strip the /api/v1/prometheus prefix before forwarding so the upstream
 	// Prometheus receives its native /api/v1/... paths.
-	router.PathPrefix("/api/v1/prometheus/").Handler(
-		http.StripPrefix("/api/v1/prometheus", proxy),
-	)
+	handler := http.StripPrefix(routePrefix, proxy)
+	for _, path := range allowedPaths {
+		router.Handle(routePrefix+path, handler).Methods(http.MethodGet)
+	}
 	return nil
 }
