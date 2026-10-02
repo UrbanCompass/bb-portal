@@ -31,10 +31,16 @@ jobs:
 
       - run:
           name: Install crane
+          environment:
+            CRANE_VERSION: v0.22.1
+            CRANE_SHA256: 0ab7a1d6932a213aed964ce97666c3077fe691c8606413674a8b3e0b9ec4cda0
           command: |
-            curl -fsSL "https://artifacts.compass-tech.net/repository/generic-local/crane/v0.22.1/go-containerregistry_Linux_x86_64.tar.gz" \
-              | tar xz -C ~/bin crane
+            curl -fsSL -o /tmp/crane.tar.gz \
+              "https://artifacts.compass-tech.net/repository/generic-local/crane/${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz"
+            echo "${CRANE_SHA256}  /tmp/crane.tar.gz" | sha256sum -c -
+            tar xzf /tmp/crane.tar.gz -C ~/bin crane
             chmod +x ~/bin/crane
+            crane version
 
       - run:
           name: Assume ECRPowerUserRole and login to ECR
