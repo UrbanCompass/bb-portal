@@ -3,6 +3,7 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "buildeventrecorder",
     srcs = [
+        "action_sampler.go",
         "batcher.go",
         "besfileutils.go",
         "build_event_recorder.go",
@@ -67,14 +68,19 @@ go_library(
         "@io_opentelemetry_go_otel_trace//:trace",
         "@org_golang_google_grpc//codes",
         "@org_golang_google_grpc//status",
+        "@org_golang_google_protobuf//types/known/anypb",
     ],
 )
 
 go_test(
     name = "buildeventrecorder_test",
-    srcs = ["build_event_recorder_test.go"],
+    srcs = [
+        "action_sampler_test.go",
+        "build_event_recorder_test.go",
+        "saveActionExecuted_test.go",
+    ],
+    embed = [":buildeventrecorder"],
     deps = [
-        ":buildeventrecorder",
         "//ent/gen/ent/runtime",
         "//internal/database/dbauthservice",
         "//internal/database/embedded",
@@ -84,5 +90,6 @@ go_test(
         "@com_github_stretchr_testify//require",
         "@org_golang_google_grpc//codes",
         "@org_golang_google_grpc//status",
+        "@org_golang_google_protobuf//types/known/anypb",
     ],
 )

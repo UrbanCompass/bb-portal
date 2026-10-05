@@ -2,7 +2,6 @@ package buildeventrecorder
 
 import (
 	"context"
-	"math/rand"
 	"reflect"
 	"strings"
 
@@ -15,11 +14,6 @@ import (
 	"github.com/buildbarn/bb-storage/pkg/util"
 	"google.golang.org/protobuf/types/known/anypb"
 )
-
-// successfulActionSampleCap is the maximum number of successful actions
-// persisted per invocation. Keeps storage bounded while providing enough
-// sample data for inter-invocation action comparisons.
-const successfulActionSampleCap = 100
 
 func getErrorCodeFromFailureDetail(failureDetail *protobuf.FailureDetail) string {
 	if failureDetail == nil || failureDetail.Category == nil {
@@ -63,8 +57,8 @@ func getErrorCodeFromFailureDetail(failureDetail *protobuf.FailureDetail) string
 // when no recognized message is found.
 //
 // Bazel encodes execution strategy info as proto Any messages whose type URL
-// conventionally ends in the message name. We look for known suffixes and fall
-// back to the raw type URL tail so new strategy types surface without code
+// conventionally ends in the message name. We match known message names and
+// fall back to the raw name so new strategy types surface without code
 // changes.
 func cacheStatusFromStrategyDetails(details []*anypb.Any) string {
 	for _, d := range details {
@@ -72,20 +66,24 @@ func cacheStatusFromStrategyDetails(details []*anypb.Any) string {
 			continue
 		}
 		url := d.GetTypeUrl()
-		switch {
-		case strings.HasSuffix(url, "RemoteSpawnMetrics"):
+		// The message name is the last path or package component of the
+		// type URL. Match it exactly: a suffix match would classify
+		// LocalSpawnMetrics as SpawnMetrics.
+		name := url
+		if idx := strings.LastIndexAny(url, "/."); idx >= 0 {
+			name = url[idx+1:]
+		}
+		switch name {
+		case "RemoteSpawnMetrics":
 			return "remote cache hit"
-		case strings.HasSuffix(url, "SpawnMetrics"):
+		case "SpawnMetrics":
 			// SpawnMetrics appears for both local and remote-exec actions;
-			// keep the raw suffix for now — callers can refine later.
+			// keep it coarse for now and refine later.
 			return "remote"
 		}
-		// For unrecognized types, surface the last path component so the
-		// data is at least queryable.
-		if idx := strings.LastIndexAny(url, "/."); idx >= 0 {
-			return url[idx+1:]
-		}
-		return url
+		// For unrecognized types, surface the name so the data is at least
+		// queryable.
+		return name
 	}
 	return ""
 }
@@ -98,24 +96,12 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 		return nil
 	}
 
-	// Algorithm R reservoir sampling for successful actions.
-	// Every successful action has an equal 1-in-N probability of being in
-	// the final sample of size successfulActionSampleCap, regardless of
-	// arrival order.
-	var reservoirSlot int = -1 // -1 means: do not persist this action
+	// Failures are always persisted. Successes are sampled per invocation
+	// (see actionSampler); a slot of -1 means this one is not persisted.
+	sampleSlot := -1
 	if actionExecuted.Success {
-		r.successfulActionsSeen++
-		n := r.successfulActionsSeen
-		if n <= successfulActionSampleCap {
-			// Reservoir not yet full — always include.
-			reservoirSlot = n - 1
-		} else {
-			// Reservoir full — include with probability k/n.
-			if j := rand.Intn(n); j < successfulActionSampleCap {
-				reservoirSlot = j
-			}
-		}
-		if reservoirSlot < 0 {
+		sampleSlot = r.actionSampler.admit()
+		if sampleSlot < 0 {
 			return nil
 		}
 	}
@@ -165,7 +151,7 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 		create.SetFailureCode(failureCode)
 	}
 	if actionExecuted.StartTime != nil {
-		create.SetStartTime(actionExecuted.StartTime.AsTime()) // was wrongly using EndTime
+		create.SetStartTime(actionExecuted.StartTime.AsTime())
 	}
 	if actionExecuted.EndTime != nil {
 		create.SetEndTime(actionExecuted.EndTime.AsTime())
@@ -193,16 +179,15 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 		return util.StatusWrap(err, "failed to save Action")
 	}
 
-	// Update reservoir tracking for sampled successful actions.
-	if reservoirSlot >= 0 {
-		if reservoirSlot < len(r.reservoirIDs) {
-			// Displace: evict the previously sampled action at this slot.
-			if err := tx.Ent().Action.UpdateOneID(r.reservoirIDs[reservoirSlot]).SetSampled(false).Exec(ctx); err != nil {
-				return util.StatusWrap(err, "failed to evict displaced Action from reservoir")
+	// Track sampled successes, deleting the row a new action displaces.
+	if sampleSlot >= 0 {
+		if sampleSlot < len(r.sampledActionIDs) {
+			if err := tx.Ent().Action.DeleteOneID(r.sampledActionIDs[sampleSlot]).Exec(ctx); err != nil {
+				return util.StatusWrap(err, "failed to evict displaced sampled Action")
 			}
-			r.reservoirIDs[reservoirSlot] = action.ID
+			r.sampledActionIDs[sampleSlot] = action.ID
 		} else {
-			r.reservoirIDs = append(r.reservoirIDs, action.ID)
+			r.sampledActionIDs = append(r.sampledActionIDs, action.ID)
 		}
 	}
 
