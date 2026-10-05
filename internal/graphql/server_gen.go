@@ -133,6 +133,7 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Action struct {
 		BazelInvocation func(childComplexity int) int
+		CacheStatus     func(childComplexity int) int
 		CommandLine     func(childComplexity int) int
 		Configuration   func(childComplexity int) int
 		EndTime         func(childComplexity int) int
@@ -141,6 +142,8 @@ type ComplexityRoot struct {
 		FailureMessage  func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Label           func(childComplexity int) int
+		PrimaryOutput   func(childComplexity int) int
+		Sampled         func(childComplexity int) int
 		StartTime       func(childComplexity int) int
 		Stderr          func(childComplexity int) int
 		Stdout          func(childComplexity int) int
@@ -1370,6 +1373,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Action.BazelInvocation(childComplexity), true
+	case "Action.cacheStatus":
+		if e.ComplexityRoot.Action.CacheStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Action.CacheStatus(childComplexity), true
 	case "Action.commandLine":
 		if e.ComplexityRoot.Action.CommandLine == nil {
 			break
@@ -1418,6 +1427,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Action.Label(childComplexity), true
+	case "Action.primaryOutput":
+		if e.ComplexityRoot.Action.PrimaryOutput == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Action.PrimaryOutput(childComplexity), true
+	case "Action.sampled":
+		if e.ComplexityRoot.Action.Sampled == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Action.Sampled(childComplexity), true
 	case "Action.startTime":
 		if e.ComplexityRoot.Action.StartTime == nil {
 			break
@@ -4048,6 +4069,12 @@ func (ec *executionContext) childFields_Action(ctx context.Context, field graphq
 		return ec.fieldContext_Action_failureCode(ctx, field)
 	case "failureMessage":
 		return ec.fieldContext_Action_failureMessage(ctx, field)
+	case "primaryOutput":
+		return ec.fieldContext_Action_primaryOutput(ctx, field)
+	case "cacheStatus":
+		return ec.fieldContext_Action_cacheStatus(ctx, field)
+	case "sampled":
+		return ec.fieldContext_Action_sampled(ctx, field)
 	case "bazelInvocation":
 		return ec.fieldContext_Action_bazelInvocation(ctx, field)
 	case "configuration":
@@ -6196,6 +6223,75 @@ func (ec *executionContext) _Action_failureMessage(ctx context.Context, field gr
 }
 func (ec *executionContext) fieldContext_Action_failureMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Action", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Action_primaryOutput(ctx context.Context, field graphql.CollectedField, obj *ent.Action) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Action_primaryOutput(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PrimaryOutput, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Action_primaryOutput(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Action", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Action_cacheStatus(ctx context.Context, field graphql.CollectedField, obj *ent.Action) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Action_cacheStatus(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CacheStatus, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Action_cacheStatus(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Action", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Action_sampled(ctx context.Context, field graphql.CollectedField, obj *ent.Action) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Action_sampled(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Sampled, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalOBoolean2bool(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Action_sampled(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Action", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
 func (ec *executionContext) _Action_bazelInvocation(ctx context.Context, field graphql.CollectedField, obj *ent.Action) (ret graphql.Marshaler) {
@@ -19321,7 +19417,7 @@ func (ec *executionContext) unmarshalInputActionWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "label", "labelNEQ", "labelIn", "labelNotIn", "labelGT", "labelGTE", "labelLT", "labelLTE", "labelContains", "labelHasPrefix", "labelHasSuffix", "labelEqualFold", "labelContainsFold", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeIsNil", "typeNotNil", "typeEqualFold", "typeContainsFold", "success", "successNEQ", "successIsNil", "successNotNil", "exitCode", "exitCodeNEQ", "exitCodeIn", "exitCodeNotIn", "exitCodeGT", "exitCodeGTE", "exitCodeLT", "exitCodeLTE", "exitCodeIsNil", "exitCodeNotNil", "startTime", "startTimeNEQ", "startTimeIn", "startTimeNotIn", "startTimeGT", "startTimeGTE", "startTimeLT", "startTimeLTE", "startTimeIsNil", "startTimeNotNil", "endTime", "endTimeNEQ", "endTimeIn", "endTimeNotIn", "endTimeGT", "endTimeGTE", "endTimeLT", "endTimeLTE", "endTimeIsNil", "endTimeNotNil", "failureCode", "failureCodeNEQ", "failureCodeIn", "failureCodeNotIn", "failureCodeGT", "failureCodeGTE", "failureCodeLT", "failureCodeLTE", "failureCodeContains", "failureCodeHasPrefix", "failureCodeHasSuffix", "failureCodeIsNil", "failureCodeNotNil", "failureCodeEqualFold", "failureCodeContainsFold", "failureMessage", "failureMessageNEQ", "failureMessageIn", "failureMessageNotIn", "failureMessageGT", "failureMessageGTE", "failureMessageLT", "failureMessageLTE", "failureMessageContains", "failureMessageHasPrefix", "failureMessageHasSuffix", "failureMessageIsNil", "failureMessageNotNil", "failureMessageEqualFold", "failureMessageContainsFold", "hasBazelInvocation", "hasBazelInvocationWith", "hasConfiguration", "hasConfigurationWith", "hasStdout", "hasStdoutWith", "hasStderr", "hasStderrWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "label", "labelNEQ", "labelIn", "labelNotIn", "labelGT", "labelGTE", "labelLT", "labelLTE", "labelContains", "labelHasPrefix", "labelHasSuffix", "labelEqualFold", "labelContainsFold", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeIsNil", "typeNotNil", "typeEqualFold", "typeContainsFold", "success", "successNEQ", "successIsNil", "successNotNil", "exitCode", "exitCodeNEQ", "exitCodeIn", "exitCodeNotIn", "exitCodeGT", "exitCodeGTE", "exitCodeLT", "exitCodeLTE", "exitCodeIsNil", "exitCodeNotNil", "startTime", "startTimeNEQ", "startTimeIn", "startTimeNotIn", "startTimeGT", "startTimeGTE", "startTimeLT", "startTimeLTE", "startTimeIsNil", "startTimeNotNil", "endTime", "endTimeNEQ", "endTimeIn", "endTimeNotIn", "endTimeGT", "endTimeGTE", "endTimeLT", "endTimeLTE", "endTimeIsNil", "endTimeNotNil", "failureCode", "failureCodeNEQ", "failureCodeIn", "failureCodeNotIn", "failureCodeGT", "failureCodeGTE", "failureCodeLT", "failureCodeLTE", "failureCodeContains", "failureCodeHasPrefix", "failureCodeHasSuffix", "failureCodeIsNil", "failureCodeNotNil", "failureCodeEqualFold", "failureCodeContainsFold", "failureMessage", "failureMessageNEQ", "failureMessageIn", "failureMessageNotIn", "failureMessageGT", "failureMessageGTE", "failureMessageLT", "failureMessageLTE", "failureMessageContains", "failureMessageHasPrefix", "failureMessageHasSuffix", "failureMessageIsNil", "failureMessageNotNil", "failureMessageEqualFold", "failureMessageContainsFold", "primaryOutput", "primaryOutputNEQ", "primaryOutputIn", "primaryOutputNotIn", "primaryOutputGT", "primaryOutputGTE", "primaryOutputLT", "primaryOutputLTE", "primaryOutputContains", "primaryOutputHasPrefix", "primaryOutputHasSuffix", "primaryOutputIsNil", "primaryOutputNotNil", "primaryOutputEqualFold", "primaryOutputContainsFold", "cacheStatus", "cacheStatusNEQ", "cacheStatusIn", "cacheStatusNotIn", "cacheStatusGT", "cacheStatusGTE", "cacheStatusLT", "cacheStatusLTE", "cacheStatusContains", "cacheStatusHasPrefix", "cacheStatusHasSuffix", "cacheStatusIsNil", "cacheStatusNotNil", "cacheStatusEqualFold", "cacheStatusContainsFold", "sampled", "sampledNEQ", "sampledIsNil", "sampledNotNil", "hasBazelInvocation", "hasBazelInvocationWith", "hasConfiguration", "hasConfigurationWith", "hasStdout", "hasStdoutWith", "hasStderr", "hasStderrWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20065,6 +20161,244 @@ func (ec *executionContext) unmarshalInputActionWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.FailureMessageContainsFold = data
+		case "primaryOutput":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutput"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutput = data
+		case "primaryOutputNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputNEQ = data
+		case "primaryOutputIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputIn = data
+		case "primaryOutputNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputNotIn = data
+		case "primaryOutputGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputGT = data
+		case "primaryOutputGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputGTE = data
+		case "primaryOutputLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputLT = data
+		case "primaryOutputLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputLTE = data
+		case "primaryOutputContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputContains = data
+		case "primaryOutputHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputHasPrefix = data
+		case "primaryOutputHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputHasSuffix = data
+		case "primaryOutputIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputIsNil = data
+		case "primaryOutputNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputNotNil = data
+		case "primaryOutputEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputEqualFold = data
+		case "primaryOutputContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryOutputContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryOutputContainsFold = data
+		case "cacheStatus":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatus"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatus = data
+		case "cacheStatusNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusNEQ = data
+		case "cacheStatusIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusIn = data
+		case "cacheStatusNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusNotIn = data
+		case "cacheStatusGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusGT = data
+		case "cacheStatusGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusGTE = data
+		case "cacheStatusLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusLT = data
+		case "cacheStatusLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusLTE = data
+		case "cacheStatusContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusContains = data
+		case "cacheStatusHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusHasPrefix = data
+		case "cacheStatusHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusHasSuffix = data
+		case "cacheStatusIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusIsNil = data
+		case "cacheStatusNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusNotNil = data
+		case "cacheStatusEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusEqualFold = data
+		case "cacheStatusContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cacheStatusContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CacheStatusContainsFold = data
+		case "sampled":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sampled"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Sampled = data
+		case "sampledNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sampledNEQ"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SampledNEQ = data
+		case "sampledIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sampledIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SampledIsNil = data
+		case "sampledNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sampledNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SampledNotNil = data
 		case "hasBazelInvocation":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBazelInvocation"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -38880,6 +39214,21 @@ func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "failureMessage":
 			out.Values[i] = ec._Action_failureMessage(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "primaryOutput":
+			out.Values[i] = ec._Action_primaryOutput(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "cacheStatus":
+			out.Values[i] = ec._Action_cacheStatus(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "sampled":
+			out.Values[i] = ec._Action_sampled(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
