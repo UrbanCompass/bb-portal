@@ -6,6 +6,8 @@ import (
 	"os"
 	"testing"
 
+	bes "github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto"
+	"github.com/buildbarn/bb-portal/ent/gen/ent/configuration"
 	"github.com/buildbarn/bb-portal/internal/database/buildeventrecorder"
 	"github.com/buildbarn/bb-portal/internal/database/dbauthservice"
 	"github.com/buildbarn/bb-portal/internal/database/embedded"
@@ -96,4 +98,43 @@ func TestFindOrCreateInvocation(t *testing.T) {
 		require.Equal(t, codes.FailedPrecondition, st.Code())
 		require.Contains(t, err.Error(), "locked for writing")
 	})
+}
+
+func TestSaveActionExecutedUnannouncedConfiguration(t *testing.T) {
+	ctx := dbauthservice.NewContextWithDbAuthServiceBypass(context.Background())
+	db := testutils.SetupTestDB(t, dbProvider)
+	client := db.Ent()
+	instanceName := testutils.CreateInstanceName(ctx, t, client, "test")
+	inv, err := testutils.StartCreateInvocation(client, instanceName).Save(ctx)
+	require.NoError(t, err)
+
+	save := func(label, configID string) error {
+		return buildeventrecorder.SaveActionExecutedForTest(ctx, db, inv.ID,
+			&bes.ActionExecuted{Success: true, Type: "Symlink"},
+			&bes.BuildEventId_ActionCompletedId{
+				Label:         label,
+				PrimaryOutput: "bazel-out/" + label,
+				Configuration: &bes.BuildEventId_ConfigurationId{Id: configID},
+			})
+	}
+
+	// Bazel references the "system" configuration from ActionExecuted events
+	// without ever announcing it in a Configuration event. That must not fail
+	// the batch.
+	require.NoError(t, save("//a:a", "system"))
+	require.NoError(t, save("//b:b", "system"))
+
+	configs, err := client.Configuration.Query().
+		Where(configuration.ConfigurationID("system")).
+		All(ctx)
+	require.NoError(t, err)
+	require.Len(t, configs, 1, "the unannounced configuration should be created once and reused")
+
+	actions, err := client.Action.Query().All(ctx)
+	require.NoError(t, err)
+	require.Len(t, actions, 2)
+	for _, a := range actions {
+		require.Equal(t, configs[0].ID, a.ConfigurationID)
+		require.True(t, a.Sampled)
+	}
 }

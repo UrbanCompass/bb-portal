@@ -77,13 +77,17 @@ go_test(
     srcs = [
         "action_sampler_test.go",
         "build_event_recorder_test.go",
+        "export_test.go",
         "saveActionExecuted_test.go",
     ],
     embed = [":buildeventrecorder"],
     deps = [
+        "//ent/gen/ent/configuration",
         "//ent/gen/ent/runtime",
+        "//internal/database",
         "//internal/database/dbauthservice",
         "//internal/database/embedded",
+        "//pkg/proto/bazelbuild/bazel/bes:build_event_stream",
         "//test/testutils",
         "@com_github_google_uuid//:uuid",
         "@com_github_prometheus_client_golang//prometheus",
