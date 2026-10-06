@@ -29,6 +29,10 @@ type actionSampler interface {
 	// action should not be persisted. If the slot is already occupied, the
 	// previous occupant must be evicted by the caller.
 	admit() int
+	// clone returns an independent copy of the sampler's current state, so
+	// the state can be restored if the transaction that consumed slots rolls
+	// back.
+	clone() actionSampler
 }
 
 // actionSamplingConfig configures how successful actions are sampled.
@@ -101,4 +105,14 @@ func (s *firstNSampler) admit() int {
 		return s.seen - 1
 	}
 	return -1
+}
+
+func (s *reservoirSampler) clone() actionSampler {
+	c := *s
+	return &c
+}
+
+func (s *firstNSampler) clone() actionSampler {
+	c := *s
+	return &c
 }

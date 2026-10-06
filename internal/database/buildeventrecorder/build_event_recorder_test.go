@@ -138,3 +138,58 @@ func TestSaveActionExecutedUnannouncedConfiguration(t *testing.T) {
 		require.True(t, a.Sampled)
 	}
 }
+
+// TestSaveRemainingBatchRollbackRestoresSampler checks that when the batch
+// transaction rolls back after evicting sampled rows, the in-memory sampler
+// state is restored, so the retry neither fails nor leaves orphan rows.
+func TestSaveRemainingBatchRollbackRestoresSampler(t *testing.T) {
+	ctx := dbauthservice.NewContextWithDbAuthServiceBypass(context.Background())
+	db := testutils.SetupTestDB(t, dbProvider)
+	client := db.Ent()
+	instanceName := testutils.CreateInstanceName(ctx, t, client, "test")
+	inv, err := testutils.StartCreateInvocation(client, instanceName).Save(ctx)
+	require.NoError(t, err)
+
+	const sampleCap = 2
+	rec := buildeventrecorder.NewRecorderForTest(db, inv.ID, sampleCap)
+	require.NoError(t, rec.LoadHandledEvents(ctx))
+
+	batchOf := func(from, to int) []buildeventrecorder.BuildEventWithInfo {
+		var batch []buildeventrecorder.BuildEventWithInfo
+		for i := from; i <= to; i++ {
+			label := fmt.Sprintf("//pkg:t%d", i)
+			batch = append(batch, buildeventrecorder.BuildEventWithInfo{
+				SequenceNumber: uint32(i),
+				Event: &bes.BuildEvent{
+					Id: &bes.BuildEventId{Id: &bes.BuildEventId_ActionCompleted{
+						ActionCompleted: &bes.BuildEventId_ActionCompletedId{
+							Label:         label,
+							PrimaryOutput: "out/" + label,
+							Configuration: &bes.BuildEventId_ConfigurationId{Id: "system"},
+						},
+					}},
+					Payload: &bes.BuildEvent_Action{Action: &bes.ActionExecuted{Success: true}},
+				},
+			})
+		}
+		return batch
+	}
+
+	// Fill the reservoir.
+	require.NoError(t, rec.SaveRemaining(ctx, batchOf(1, 2)))
+
+	// This batch evicts slot 0 for each action, then rolls back.
+	rec.BreakHandledEvents()
+	require.Error(t, rec.SaveRemaining(ctx, batchOf(3, 4)))
+	count, err := client.Action.Query().Count(ctx)
+	require.NoError(t, err)
+	require.Equal(t, sampleCap, count, "rollback must leave the original rows")
+
+	// The retry replays the batch against restored sampler state. Without the
+	// restore it deletes a stale ID and fails, or leaves an orphan row.
+	require.NoError(t, rec.LoadHandledEvents(ctx))
+	require.NoError(t, rec.SaveRemaining(ctx, batchOf(3, 4)))
+	count, err = client.Action.Query().Count(ctx)
+	require.NoError(t, err)
+	require.Equal(t, sampleCap, count, "the cap must hold after the retry")
+}
