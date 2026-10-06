@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -11,6 +12,14 @@ import (
 // Action holds the schema definition for the Action entity.
 type Action struct {
 	ent.Schema
+}
+
+// Annotations of the Action.
+func (Action) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField("findActions"),
+	}
 }
 
 // Fields of the Action.

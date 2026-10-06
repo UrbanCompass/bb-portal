@@ -1,4 +1,4 @@
-load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "graphql",
@@ -40,5 +40,19 @@ go_library(
         "@com_github_vektah_gqlparser_v2//ast",
         "@io_entgo_contrib//entgql",
         "@io_opentelemetry_go_otel_trace//:trace",
+    ],
+)
+
+go_test(
+    name = "graphql_test",
+    srcs = ["find_actions_test.go"],
+    embed = [":graphql"],
+    deps = [
+        "//ent/gen/ent",
+        "//ent/gen/ent/runtime",
+        "//internal/database/dbauthservice",
+        "//internal/database/embedded",
+        "//test/testutils",
+        "@com_github_stretchr_testify//require",
     ],
 )

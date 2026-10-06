@@ -138,6 +138,23 @@ input ActionCacheStatisticsWhereInput {
   hasMissDetails: Boolean
   hasMissDetailsWith: [MissDetailWhereInput!]
 }
+"""
+A connection to a list of items.
+"""
+type ActionConnection {
+  """
+  A list of edges.
+  """
+  edges: [ActionEdge]
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Int!
+}
 type ActionData implements Node {
   id: ID!
   mnemonic: String
@@ -269,6 +286,19 @@ input ActionDataWhereInput {
   """
   hasActionSummary: Boolean
   hasActionSummaryWith: [ActionSummaryWhereInput!]
+}
+"""
+An edge in a connection.
+"""
+type ActionEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: Action
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
 }
 type ActionSummary implements Node {
   id: ID!
@@ -3359,6 +3389,32 @@ type Query {
     """
     ids: [ID!]!
   ): [Node]!
+  findActions(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Filtering options for Actions returned from the connection.
+    """
+    where: ActionWhereInput
+  ): ActionConnection!
   findBazelInvocations(
     """
     Returns the elements in the list that come after the specified cursor.

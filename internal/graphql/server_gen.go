@@ -163,6 +163,12 @@ type ComplexityRoot struct {
 		SizeInBytes                     func(childComplexity int) int
 	}
 
+	ActionConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
 	ActionData struct {
 		ActionSummary   func(childComplexity int) int
 		ActionsCreated  func(childComplexity int) int
@@ -173,6 +179,11 @@ type ComplexityRoot struct {
 		Mnemonic        func(childComplexity int) int
 		SystemTime      func(childComplexity int) int
 		UserTime        func(childComplexity int) int
+	}
+
+	ActionEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	ActionSummary struct {
@@ -523,6 +534,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		FindActions          func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.ActionWhereInput) int
 		FindBazelInvocations func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.BazelInvocationOrder, where *ent.BazelInvocationWhereInput) int
 		FindBuilds           func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.BuildOrder, where *ent.BuildWhereInput) int
 		FindTargets          func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.TargetWhereInput) int
@@ -827,6 +839,7 @@ type PackageMetricsResolver interface {
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (ent.Noder, error)
 	Nodes(ctx context.Context, ids []string) ([]ent.Noder, error)
+	FindActions(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.ActionWhereInput) (*ent.ActionConnection, error)
 	FindBazelInvocations(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.BazelInvocationOrder, where *ent.BazelInvocationWhereInput) (*ent.BazelInvocationConnection, error)
 	FindBuilds(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.BuildOrder, where *ent.BuildWhereInput) (*ent.BuildConnection, error)
 	FindTargets(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.TargetWhereInput) (*ent.TargetConnection, error)
@@ -1525,6 +1538,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ActionCacheStatistics.SizeInBytes(childComplexity), true
 
+	case "ActionConnection.edges":
+		if e.ComplexityRoot.ActionConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActionConnection.Edges(childComplexity), true
+	case "ActionConnection.pageInfo":
+		if e.ComplexityRoot.ActionConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActionConnection.PageInfo(childComplexity), true
+	case "ActionConnection.totalCount":
+		if e.ComplexityRoot.ActionConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActionConnection.TotalCount(childComplexity), true
+
 	case "ActionData.actionSummary":
 		if e.ComplexityRoot.ActionData.ActionSummary == nil {
 			break
@@ -1579,6 +1611,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.ActionData.UserTime(childComplexity), true
+
+	case "ActionEdge.cursor":
+		if e.ComplexityRoot.ActionEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActionEdge.Cursor(childComplexity), true
+	case "ActionEdge.node":
+		if e.ComplexityRoot.ActionEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActionEdge.Node(childComplexity), true
 
 	case "ActionSummary.actionCacheStatistics":
 		if e.ComplexityRoot.ActionSummary.ActionCacheStatistics == nil {
@@ -3024,6 +3069,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.PageInfo.StartCursor(childComplexity), true
 
+	case "Query.findActions":
+		if e.ComplexityRoot.Query.FindActions == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findActions_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FindActions(childComplexity, args["after"].(*entgql.Cursor[int64]), args["first"].(*int), args["before"].(*entgql.Cursor[int64]), args["last"].(*int), args["where"].(*ent.ActionWhereInput)), true
 	case "Query.findBazelInvocations":
 		if e.ComplexityRoot.Query.FindBazelInvocations == nil {
 			break
@@ -4111,6 +4167,18 @@ func (ec *executionContext) childFields_ActionCacheStatistics(ctx context.Contex
 	return nil, fmt.Errorf("no field named %q was found under type ActionCacheStatistics", field.Name)
 }
 
+func (ec *executionContext) childFields_ActionConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_ActionConnection_edges(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_ActionConnection_pageInfo(ctx, field)
+	case "totalCount":
+		return ec.fieldContext_ActionConnection_totalCount(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActionConnection", field.Name)
+}
+
 func (ec *executionContext) childFields_ActionData(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "id":
@@ -4133,6 +4201,16 @@ func (ec *executionContext) childFields_ActionData(ctx context.Context, field gr
 		return ec.fieldContext_ActionData_actionSummary(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type ActionData", field.Name)
+}
+
+func (ec *executionContext) childFields_ActionEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_ActionEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_ActionEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActionEdge", field.Name)
 }
 
 func (ec *executionContext) childFields_ActionSummary(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5575,6 +5653,52 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_findActions_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "after",
+		func(ctx context.Context, v any) (*entgql.Cursor[int64], error) {
+			return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["after"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "first",
+		func(ctx context.Context, v any) (*int, error) {
+			return ec.unmarshalOInt2ᚖint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["first"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "before",
+		func(ctx context.Context, v any) (*entgql.Cursor[int64], error) {
+			return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["before"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "last",
+		func(ctx context.Context, v any) (*int, error) {
+			return ec.unmarshalOInt2ᚖint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["last"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "where",
+		func(ctx context.Context, v any) (*ent.ActionWhereInput, error) {
+			return ec.unmarshalOActionWhereInput2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionWhereInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["where"] = arg4
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_findBazelInvocations_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -6647,6 +6771,93 @@ func (ec *executionContext) fieldContext_ActionCacheStatistics_missDetails(_ con
 	return fc, nil
 }
 
+func (ec *executionContext) _ActionConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.ActionConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ActionConnection_edges(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Edges, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*ent.ActionEdge) graphql.Marshaler {
+			return ec.marshalOActionEdge2ᚕᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionEdge(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ActionConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ActionConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ActionEdge(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ActionConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.ActionConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ActionConnection_pageInfo(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PageInfo, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v entgql.PageInfo[int64]) graphql.Marshaler {
+			return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ActionConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ActionConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PageInfo(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ActionConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.ActionConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ActionConnection_totalCount(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TotalCount, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ActionConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ActionConnection", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _ActionData_id(ctx context.Context, field graphql.CollectedField, obj *ent.ActionData) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -6861,6 +7072,61 @@ func (ec *executionContext) fieldContext_ActionData_actionSummary(_ context.Cont
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _ActionEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.ActionEdge) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ActionEdge_node(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Node, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *ent.Action) graphql.Marshaler {
+			return ec.marshalOAction2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐAction(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ActionEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ActionEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Action(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ActionEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.ActionEdge) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ActionEdge_cursor(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Cursor, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v entgql.Cursor[int64]) graphql.Marshaler {
+			return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ActionEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ActionEdge", field, false, false, errors.New("field of type Cursor does not have child fields"))
 }
 
 func (ec *executionContext) _ActionSummary_id(ctx context.Context, field graphql.CollectedField, obj *ent.ActionSummary) (ret graphql.Marshaler) {
@@ -13114,6 +13380,50 @@ func (ec *executionContext) fieldContext_Query_nodes(ctx context.Context, field 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_nodes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findActions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_findActions(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FindActions(ctx, fc.Args["after"].(*entgql.Cursor[int64]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int64]), fc.Args["last"].(*int), fc.Args["where"].(*ent.ActionWhereInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *ent.ActionConnection) graphql.Marshaler {
+			return ec.marshalNActionConnection2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionConnection(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_findActions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ActionConnection(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findActions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -39571,6 +39881,55 @@ func (ec *executionContext) _ActionCacheStatistics(ctx context.Context, sel ast.
 	return out
 }
 
+var actionConnectionImplementors = []string{"ActionConnection"}
+
+func (ec *executionContext) _ActionConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.ActionConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, actionConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ActionConnection")
+		case "edges":
+			out.Values[i] = ec._ActionConnection_edges(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._ActionConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalCount":
+			out.Values[i] = ec._ActionConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var actionDataImplementors = []string{"ActionData", "Node"}
 
 func (ec *executionContext) _ActionData(ctx context.Context, sel ast.SelectionSet, obj *ent.ActionData) graphql.Marshaler {
@@ -39689,6 +40048,50 @@ func (ec *executionContext) _ActionData(ctx context.Context, sel ast.SelectionSe
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var actionEdgeImplementors = []string{"ActionEdge"}
+
+func (ec *executionContext) _ActionEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.ActionEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, actionEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ActionEdge")
+		case "node":
+			out.Values[i] = ec._ActionEdge_node(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "cursor":
+			out.Values[i] = ec._ActionEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -45754,6 +46157,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findActions":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findActions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "findBazelInvocations":
 			field := field
 
@@ -48745,6 +49170,20 @@ func (ec *executionContext) unmarshalNActionCacheStatisticsWhereInput2ᚖgithub�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNActionConnection2githubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionConnection(ctx context.Context, sel ast.SelectionSet, v ent.ActionConnection) graphql.Marshaler {
+	return ec._ActionConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNActionConnection2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionConnection(ctx context.Context, sel ast.SelectionSet, v *ent.ActionConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ActionConnection(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNActionData2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionData(ctx context.Context, sel ast.SelectionSet, v *ent.ActionData) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -49775,6 +50214,13 @@ func (ec *executionContext) marshalOAction2ᚕᚖgithubᚗcomᚋbuildbarnᚋbb�
 	return ret
 }
 
+func (ec *executionContext) marshalOAction2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐAction(ctx context.Context, sel ast.SelectionSet, v *ent.Action) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Action(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOActionCacheStatistics2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionCacheStatistics(ctx context.Context, sel ast.SelectionSet, v *ent.ActionCacheStatistics) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -49851,6 +50297,26 @@ func (ec *executionContext) unmarshalOActionDataWhereInput2ᚖgithubᚗcomᚋbui
 	}
 	res, err := ec.unmarshalInputActionDataWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOActionEdge2ᚕᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.ActionEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalOActionEdge2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionEdge(ctx, sel, v[i])
+	})
+
+	return ret
+}
+
+func (ec *executionContext) marshalOActionEdge2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionEdge(ctx context.Context, sel ast.SelectionSet, v *ent.ActionEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ActionEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOActionSummary2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐActionSummary(ctx context.Context, sel ast.SelectionSet, v *ent.ActionSummary) graphql.Marshaler {
