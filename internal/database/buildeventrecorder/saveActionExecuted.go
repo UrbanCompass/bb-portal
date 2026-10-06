@@ -199,9 +199,9 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 
 // findOrCreateActionConfiguration returns the database ID of the invocation's
 // Configuration with the given ID. Bazel references some configurations from
-// ActionExecuted events (notably "system", used by source and symlink actions)
-// without ever announcing them in a Configuration event. Rather than failing
-// the whole event batch, a bare Configuration row is created for them.
+// ActionExecuted events (notably "system", used by the workspace status
+// action) without ever announcing them in a Configuration event. Rather than
+// failing the whole event batch, a bare Configuration row is created for them.
 func (r *buildEventRecorder) findOrCreateActionConfiguration(ctx context.Context, tx database.Handle, configID string) (int64, error) {
 	id, err := tx.Ent().Configuration.Query().
 		Where(
