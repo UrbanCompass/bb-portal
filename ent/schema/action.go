@@ -46,6 +46,10 @@ func (Action) Fields() []ent.Field {
 		field.String("failure_code").Optional(),
 		field.String("failure_message").Optional(),
 
+		field.String("primary_output").Optional(),
+		field.String("cache_status").Optional(),
+		field.Bool("sampled").Optional(),
+
 		field.Int64("stdout_file_id").
 			Optional().
 			Immutable().
@@ -92,6 +96,7 @@ func (Action) Edges() []ent.Edge {
 func (Action) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("label"),
+		index.Fields("primary_output"),
 		index.Edges("bazel_invocation"),
 		index.Edges("configuration"),
 		index.Edges("stdout"),

@@ -1,6 +1,6 @@
 import { theme } from "antd";
 import type React from "react";
-import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { RunnerCount } from "@/graphql/__generated__/graphql";
 
 interface Props {
@@ -130,38 +130,41 @@ export const ExecutionRatioDonut: React.FC<Props> = ({ runnerCounts }) => {
   if (chartData.length === 0) return null;
 
   return (
-    <PieChart width={380} height={160}>
-      <Pie
-        dataKey="value"
-        data={chartData}
-        innerRadius={45}
-        outerRadius={70}
-        cx={80}
-        cy={78}
-        isAnimationActive={false}
-        strokeWidth={1}
-        stroke="white"
-      >
-        {chartData.map((entry) => (
-          <Cell key={entry.name} fill={entry.color} />
-        ))}
-      </Pie>
-      <Tooltip content={<CustomTooltip />} />
-      <Legend
-        layout="vertical"
-        align="right"
-        verticalAlign="middle"
-        iconType="circle"
-        iconSize={10}
-        formatter={(_value, entry) => {
-          const e = entry.payload as unknown as ChartEntry;
-          return (
-            <span style={{ fontSize: 13 }}>
-              {e.label}: <strong>{e.percent.toFixed(1)}%</strong>
-            </span>
-          );
-        }}
-      />
-    </PieChart>
+    <ResponsiveContainer width="100%" height={160}>
+      <PieChart>
+        <Pie
+          dataKey="value"
+          data={chartData}
+          innerRadius={45}
+          outerRadius={70}
+          cx="22%"
+          cy={78}
+          isAnimationActive={false}
+          strokeWidth={1}
+          stroke="white"
+        >
+          {chartData.map((entry) => (
+            <Cell key={entry.name} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip content={<CustomTooltip />} />
+        <Legend
+          layout="vertical"
+          align="right"
+          verticalAlign="middle"
+          iconType="circle"
+          iconSize={10}
+          formatter={(_value, entry) => {
+            const e = entry.payload as unknown as ChartEntry;
+            const label = e.label.length > 48 ? e.label.slice(0, 48) + "…" : e.label;
+            return (
+              <span style={{ fontSize: 13 }}>
+                {label}: <strong>{e.percent.toFixed(1)}%</strong>
+              </span>
+            );
+          }}
+        />
+      </PieChart>
+    </ResponsiveContainer>
   );
 };

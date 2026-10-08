@@ -1,19 +1,28 @@
-import { InfoCircleOutlined, SwapOutlined } from "@ant-design/icons";
+import {
+  BranchesOutlined,
+  InfoCircleOutlined,
+  SwapOutlined,
+} from "@ant-design/icons";
+import { useQuery } from "@apollo/client/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Alert,
+  Badge,
   Button,
   Col,
   Divider,
   Input,
   Row,
   Space,
+  Spin,
   Statistic,
+  Table,
   Tag,
   Typography,
 } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import type React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { validate as uuidValidate } from "uuid";
 import { apolloClient } from "@/components/ApolloWrapper";
 import { ExecutionRatioDonut } from "@/components/ExecutionRatioDonut";
@@ -25,6 +34,8 @@ import type {
   InvocationCompareDataFragment,
   RunnerCount,
 } from "@/graphql/__generated__/graphql";
+import { buildJoinedRows } from "@/utils/actionComparison";
+import type { JoinedActionRow } from "@/utils/actionComparison";
 import { generatePageTitle } from "@/utils/generatePageTitle";
 import { readableDurationFromMilliseconds } from "@/utils/time";
 import z from "zod";
@@ -33,6 +44,28 @@ const GET_INVOCATION_FOR_COMPARE = gql(/* GraphQL */ `
   query GetInvocationForCompare($invocationID: UUID!) {
     getBazelInvocation(invocationID: $invocationID) {
       ...InvocationCompareData
+    }
+  }
+`);
+
+const ACTION_COMPARE_FRAGMENT = gql(/* GraphQL */ `
+  fragment ActionCompare on Action {
+    id
+    label
+    type
+    primaryOutput
+    cacheStatus
+    sampled
+  }
+`);
+
+const GET_ACTIONS_FOR_COMPARE = gql(/* GraphQL */ `
+  query GetActionsForCompare($invocationID: UUID!) {
+    getBazelInvocation(invocationID: $invocationID) {
+      id
+      actions {
+        ...ActionCompare
+      }
     }
   }
 `);
@@ -59,6 +92,7 @@ const INVOCATION_COMPARE_FRAGMENT = gql(/* GraphQL */ `
       }
       actionSummary {
         id
+        actionsExecuted
         runnerCount {
           id
           name
@@ -134,6 +168,11 @@ function RouteComponent() {
     navigate({ search: (prev) => ({ ...prev, right: val }) });
   };
 
+  const leftTotal =
+    leftInv?.metrics?.actionSummary?.actionsExecuted ?? undefined;
+  const rightTotal =
+    rightInv?.metrics?.actionSummary?.actionsExecuted ?? undefined;
+
   return (
     <PortalCard icon={<SwapOutlined />} titleBits={["Invocation Comparison"]}>
       <Row gutter={[24, 24]}>
@@ -191,6 +230,17 @@ function RouteComponent() {
           </Space>
         </Col>
       </Row>
+      {left && right && leftInv && rightInv && (
+        <>
+          <Divider />
+          <ActionComparisonPanel
+            leftID={left}
+            rightID={right}
+            leftTotal={leftTotal}
+            rightTotal={rightTotal}
+          />
+        </>
+      )}
     </PortalCard>
   );
 }
@@ -284,7 +334,7 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
             to="/bazel-invocations/$invocationID"
             params={{ invocationID: invocation.invocationID }}
           >
-            <Typography.Text code style={{ fontSize: 12 }}>
+            <Typography.Text code style={{ fontSize: 12, verticalAlign: "middle" }}>
               {invocation.invocationID}
             </Typography.Text>
           </Link>
@@ -419,5 +469,193 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
         )}
       </Space>
     </PortalCard>
+  );
+};
+
+// ─── Action Comparison Panel ────────────────────────────────────────────────
+
+
+function CacheStatusCell({
+  status,
+  present,
+}: {
+  status: string | null | undefined;
+  present: boolean;
+}) {
+  if (!present) {
+    return <Badge status="default" text="not sampled" />;
+  }
+  if (!status) {
+    return <Typography.Text type="secondary">—</Typography.Text>;
+  }
+  const color =
+    status === "remote cache hit"
+      ? "blue"
+      : status === "remote"
+        ? "green"
+        : "orange";
+  return <Tag color={color}>{status}</Tag>;
+}
+
+interface ActionComparisonPanelProps {
+  leftID: string;
+  rightID: string;
+  leftTotal: number | undefined;
+  rightTotal: number | undefined;
+}
+
+const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
+  leftID,
+  rightID,
+  leftTotal,
+  rightTotal,
+}) => {
+  const { data: leftData, loading: leftLoading } = useQuery(
+    GET_ACTIONS_FOR_COMPARE,
+    { variables: { invocationID: leftID }, fetchPolicy: "cache-first" },
+  );
+  const { data: rightData, loading: rightLoading } = useQuery(
+    GET_ACTIONS_FOR_COMPARE,
+    { variables: { invocationID: rightID }, fetchPolicy: "cache-first" },
+  );
+
+  const leftActions = useMemo(
+    () =>
+      (leftData?.getBazelInvocation?.actions ?? []).map((a) =>
+        getFragmentData(ACTION_COMPARE_FRAGMENT, a),
+      ),
+    [leftData],
+  );
+  const rightActions = useMemo(
+    () =>
+      (rightData?.getBazelInvocation?.actions ?? []).map((a) =>
+        getFragmentData(ACTION_COMPARE_FRAGMENT, a),
+      ),
+    [rightData],
+  );
+
+  const rows = useMemo(
+    () => buildJoinedRows(leftActions, rightActions),
+    [leftActions, rightActions],
+  );
+
+  const matchedCount = rows.filter((r) => r.onLeft && r.onRight).length;
+
+  const columns: ColumnsType<JoinedActionRow> = [
+    {
+      title: "Label",
+      dataIndex: "label",
+      ellipsis: true,
+      render: (label: string) => (
+        <Typography.Text code style={{ fontSize: 11 }}>
+          {label}
+        </Typography.Text>
+      ),
+    },
+    {
+      title: "Mnemonic",
+      dataIndex: "mnemonic",
+      width: 120,
+      render: (v: string | null) =>
+        v ? <Tag>{v}</Tag> : <Typography.Text type="secondary">—</Typography.Text>,
+    },
+    {
+      title: "Primary output",
+      dataIndex: "primaryOutput",
+      ellipsis: true,
+      render: (v: string | null) =>
+        v ? (
+          <Typography.Text code style={{ fontSize: 11 }}>
+            {v}
+          </Typography.Text>
+        ) : (
+          <Typography.Text type="secondary">—</Typography.Text>
+        ),
+    },
+    {
+      title: "Left cache status",
+      width: 160,
+      render: (_: unknown, row: JoinedActionRow) => (
+        <CacheStatusCell status={row.leftStatus} present={row.onLeft} />
+      ),
+    },
+    {
+      title: "Right cache status",
+      width: 160,
+      render: (_: unknown, row: JoinedActionRow) => (
+        <CacheStatusCell status={row.rightStatus} present={row.onRight} />
+      ),
+    },
+  ];
+
+  const coverageText = (() => {
+    const parts: string[] = [`${matchedCount} action${matchedCount !== 1 ? "s" : ""} matched`];
+    if (leftTotal !== undefined || rightTotal !== undefined) {
+      const denom = [
+        leftTotal !== undefined ? `~${leftTotal} left` : null,
+        rightTotal !== undefined ? `~${rightTotal} right` : null,
+      ]
+        .filter(Boolean)
+        .join(" / ");
+      parts.push(`of ${denom} total`);
+    }
+    parts.push("(sample-based — not exhaustive)");
+    return parts.join(" · ");
+  })();
+
+  if (leftLoading || rightLoading) {
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} align="center">
+        <Spin />
+        <Typography.Text type="secondary">Loading actions…</Typography.Text>
+      </Space>
+    );
+  }
+
+  return (
+    <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+      <Space>
+        <BranchesOutlined />
+        <Typography.Text strong>Action Comparison</Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          {coverageText}
+        </Typography.Text>
+      </Space>
+
+      {rows.length === 0 ? (
+        <Alert
+          type="info"
+          message="No sampled actions found"
+          description="Neither invocation had actions persisted in the sample. Failed actions are always recorded; successful actions are a random sample (up to 100 per invocation)."
+          showIcon
+        />
+      ) : (
+        <Table<JoinedActionRow>
+          dataSource={rows}
+          columns={columns}
+          size="small"
+          pagination={{ pageSize: 50, hideOnSinglePage: true }}
+          rowClassName={(row) => {
+            if (!row.onLeft || !row.onRight) return "";
+            if (row.leftStatus !== row.rightStatus)
+              return "action-compare-row-diff";
+            return "action-compare-row-same";
+          }}
+          style={{ overflow: "auto" }}
+        />
+      )}
+
+      <style>{`
+        .action-compare-row-diff td {
+          background: #fff7e6 !important;
+        }
+        .action-compare-row-same td {
+          opacity: 0.6;
+        }
+        [data-theme="dark"] .action-compare-row-diff td {
+          background: #2b2000 !important;
+        }
+      `}</style>
+    </Space>
   );
 };
