@@ -3,14 +3,17 @@ package buildeventrecorder
 import (
 	"context"
 	"reflect"
+	"strings"
 
 	bes "github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto"
 	"github.com/bazelbuild/bazel/src/main/protobuf"
+	"github.com/buildbarn/bb-portal/ent/gen/ent"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/bazelinvocation"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/configuration"
 	"github.com/buildbarn/bb-portal/internal/database"
 	"github.com/buildbarn/bb-portal/pkg/invocation/files"
 	"github.com/buildbarn/bb-storage/pkg/util"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 func getErrorCodeFromFailureDetail(failureDetail *protobuf.FailureDetail) string {
@@ -50,6 +53,42 @@ func getErrorCodeFromFailureDetail(failureDetail *protobuf.FailureDetail) string
 	return ""
 }
 
+// cacheStatusFromStrategyDetails extracts a human-readable cache status string
+// from an ActionExecuted's StrategyDetails Any list. Returns an empty string
+// when no recognized message is found.
+//
+// Bazel encodes execution strategy info as proto Any messages whose type URL
+// conventionally ends in the message name. We match known message names and
+// fall back to the raw name so new strategy types surface without code
+// changes.
+func cacheStatusFromStrategyDetails(details []*anypb.Any) string {
+	for _, d := range details {
+		if d == nil {
+			continue
+		}
+		url := d.GetTypeUrl()
+		// The message name is the last path or package component of the
+		// type URL. Match it exactly: a suffix match would classify
+		// LocalSpawnMetrics as SpawnMetrics.
+		name := url
+		if idx := strings.LastIndexAny(url, "/."); idx >= 0 {
+			name = url[idx+1:]
+		}
+		switch name {
+		case "RemoteSpawnMetrics":
+			return "remote cache hit"
+		case "SpawnMetrics":
+			// SpawnMetrics appears for both local and remote-exec actions;
+			// keep it coarse for now and refine later.
+			return "remote"
+		}
+		// For unrecognized types, surface the name so the data is at least
+		// queryable.
+		return name
+	}
+	return ""
+}
+
 func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database.Handle, actionExecuted *bes.ActionExecuted, actionCompletedID *bes.BuildEventId_ActionCompletedId) error {
 	if actionExecuted == nil || actionCompletedID == nil {
 		return nil
@@ -57,10 +96,26 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 	if actionCompletedID.Label == "" {
 		return nil
 	}
-	// We are only interested in failed actions. If this is changed, some of
-	// the text in the frontend needs to be updated as well.
+
+	// Resolve the configuration before consuming a sampler slot, so a failure
+	// here cannot leave the sampler and sampledActionIDs out of step.
+	var configDbID int64
+	if configID := actionCompletedID.Configuration.GetId(); configID != "" {
+		var err error
+		configDbID, err = r.findOrCreateActionConfiguration(ctx, tx, configID)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Failures are always persisted. Successes are sampled per invocation
+	// (see actionSampler); a slot of -1 means this one is not persisted.
+	sampleSlot := -1
 	if actionExecuted.Success {
-		return nil
+		sampleSlot = r.actionSampler.admit()
+		if sampleSlot < 0 {
+			return nil
+		}
 	}
 
 	create := tx.Ent().Action.Create().
@@ -70,20 +125,22 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 		SetExitCode(actionExecuted.ExitCode).
 		SetCommandLine(actionExecuted.CommandLine)
 
-	if configID := actionCompletedID.Configuration.GetId(); configID != "" {
-		// This results in a database query per ActionExecuted event. This is
-		// acceptable since we only care about failed actions, which are
-		// relatively rare. If we ever care about successful actions as well,
-		// we should batch this work.
-		configDbID, err := tx.Ent().Configuration.Query().
-			Where(
-				configuration.ConfigurationID(configID),
-				configuration.HasBazelInvocationWith(bazelinvocation.ID(r.InvocationDbID)),
-			).
-			OnlyID(ctx)
-		if err != nil {
-			return util.StatusWrapf(err, "failed to query Configuration with ID %#v for ActionExecuted", configID)
-		}
+	// Store the primary output path as the stable join key for inter-invocation
+	// action comparisons (label + type + primaryOutput).
+	if po := actionCompletedID.PrimaryOutput; po != "" {
+		create.SetPrimaryOutput(po)
+	}
+
+	// Best-effort cache status from StrategyDetails.
+	if status := cacheStatusFromStrategyDetails(actionExecuted.StrategyDetails); status != "" {
+		create.SetCacheStatus(status)
+	}
+
+	if actionExecuted.Success {
+		create.SetSampled(true)
+	}
+
+	if configDbID != 0 {
 		create.SetConfigurationID(configDbID)
 	}
 
@@ -97,7 +154,7 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 		create.SetFailureCode(failureCode)
 	}
 	if actionExecuted.StartTime != nil {
-		create.SetStartTime(actionExecuted.EndTime.AsTime())
+		create.SetStartTime(actionExecuted.StartTime.AsTime())
 	}
 	if actionExecuted.EndTime != nil {
 		create.SetEndTime(actionExecuted.EndTime.AsTime())
@@ -120,9 +177,50 @@ func (r *buildEventRecorder) saveActionExecuted(ctx context.Context, tx database
 			create.SetStderrID(fileDbID)
 		}
 	}
-	err := create.Exec(ctx)
+	action, err := create.Save(ctx)
 	if err != nil {
 		return util.StatusWrap(err, "failed to save Action")
 	}
+
+	// Track sampled successes, deleting the row a new action displaces.
+	if sampleSlot >= 0 {
+		if sampleSlot < len(r.sampledActionIDs) {
+			if err := tx.Ent().Action.DeleteOneID(r.sampledActionIDs[sampleSlot]).Exec(ctx); err != nil {
+				return util.StatusWrap(err, "failed to evict displaced sampled Action")
+			}
+			r.sampledActionIDs[sampleSlot] = action.ID
+		} else {
+			r.sampledActionIDs = append(r.sampledActionIDs, action.ID)
+		}
+	}
+
 	return nil
+}
+
+// findOrCreateActionConfiguration returns the database ID of the invocation's
+// Configuration with the given ID. Bazel references some configurations from
+// ActionExecuted events (notably "system", used by the workspace status
+// action) without ever announcing them in a Configuration event. Rather than
+// failing the whole event batch, a bare Configuration row is created for them.
+func (r *buildEventRecorder) findOrCreateActionConfiguration(ctx context.Context, tx database.Handle, configID string) (int64, error) {
+	id, err := tx.Ent().Configuration.Query().
+		Where(
+			configuration.ConfigurationID(configID),
+			configuration.HasBazelInvocationWith(bazelinvocation.ID(r.InvocationDbID)),
+		).
+		OnlyID(ctx)
+	if err == nil {
+		return id, nil
+	}
+	if !ent.IsNotFound(err) {
+		return 0, util.StatusWrapf(err, "failed to query Configuration with ID %#v for ActionExecuted", configID)
+	}
+	created, err := tx.Ent().Configuration.Create().
+		SetConfigurationID(configID).
+		SetBazelInvocationID(r.InvocationDbID).
+		Save(ctx)
+	if err != nil {
+		return 0, util.StatusWrapf(err, "failed to create Configuration with ID %#v for ActionExecuted", configID)
+	}
+	return created.ID, nil
 }

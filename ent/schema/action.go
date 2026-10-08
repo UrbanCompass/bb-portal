@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -11,6 +12,14 @@ import (
 // Action holds the schema definition for the Action entity.
 type Action struct {
 	ent.Schema
+}
+
+// Annotations of the Action.
+func (Action) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField("findActions"),
+	}
 }
 
 // Fields of the Action.
@@ -45,6 +54,10 @@ func (Action) Fields() []ent.Field {
 
 		field.String("failure_code").Optional(),
 		field.String("failure_message").Optional(),
+
+		field.String("primary_output").Optional(),
+		field.String("cache_status").Optional(),
+		field.Bool("sampled").Optional(),
 
 		field.Int64("stdout_file_id").
 			Optional().
@@ -92,6 +105,7 @@ func (Action) Edges() []ent.Edge {
 func (Action) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("label"),
+		index.Fields("primary_output"),
 		index.Edges("bazel_invocation"),
 		index.Edges("configuration"),
 		index.Edges("stdout"),

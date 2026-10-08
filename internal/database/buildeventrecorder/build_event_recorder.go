@@ -72,6 +72,15 @@ type buildEventRecorder struct {
 	InstanceNameDbID int64
 	InvocationID     string
 	InvocationDbID   int64
+
+	// actionSampler decides which successful ActionExecuted events are
+	// persisted for this invocation.
+	actionSampler actionSampler
+	// sampledActionIDs holds the DB IDs of the successful actions currently
+	// persisted, indexed by the slot handed out by actionSampler. When a new
+	// action displaces a slot, the evicted row is deleted so storage stays
+	// bounded by the sample cap.
+	sampledActionIDs []int64
 }
 
 type handledEvents struct {
@@ -149,6 +158,8 @@ func NewBuildEventRecorder(
 		InstanceNameDbID: instanceNameDbID,
 		InvocationID:     invocationID,
 		InvocationDbID:   invocationDbID,
+
+		actionSampler: actionSamplingConfigFromEnv().newSampler(nil),
 	}, nil
 }
 

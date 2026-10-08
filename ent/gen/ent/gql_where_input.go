@@ -181,6 +181,46 @@ type ActionWhereInput struct {
 	FailureMessageEqualFold    *string  `json:"failureMessageEqualFold,omitempty"`
 	FailureMessageContainsFold *string  `json:"failureMessageContainsFold,omitempty"`
 
+	// "primary_output" field predicates.
+	PrimaryOutput             *string  `json:"primaryOutput,omitempty"`
+	PrimaryOutputNEQ          *string  `json:"primaryOutputNEQ,omitempty"`
+	PrimaryOutputIn           []string `json:"primaryOutputIn,omitempty"`
+	PrimaryOutputNotIn        []string `json:"primaryOutputNotIn,omitempty"`
+	PrimaryOutputGT           *string  `json:"primaryOutputGT,omitempty"`
+	PrimaryOutputGTE          *string  `json:"primaryOutputGTE,omitempty"`
+	PrimaryOutputLT           *string  `json:"primaryOutputLT,omitempty"`
+	PrimaryOutputLTE          *string  `json:"primaryOutputLTE,omitempty"`
+	PrimaryOutputContains     *string  `json:"primaryOutputContains,omitempty"`
+	PrimaryOutputHasPrefix    *string  `json:"primaryOutputHasPrefix,omitempty"`
+	PrimaryOutputHasSuffix    *string  `json:"primaryOutputHasSuffix,omitempty"`
+	PrimaryOutputIsNil        bool     `json:"primaryOutputIsNil,omitempty"`
+	PrimaryOutputNotNil       bool     `json:"primaryOutputNotNil,omitempty"`
+	PrimaryOutputEqualFold    *string  `json:"primaryOutputEqualFold,omitempty"`
+	PrimaryOutputContainsFold *string  `json:"primaryOutputContainsFold,omitempty"`
+
+	// "cache_status" field predicates.
+	CacheStatus             *string  `json:"cacheStatus,omitempty"`
+	CacheStatusNEQ          *string  `json:"cacheStatusNEQ,omitempty"`
+	CacheStatusIn           []string `json:"cacheStatusIn,omitempty"`
+	CacheStatusNotIn        []string `json:"cacheStatusNotIn,omitempty"`
+	CacheStatusGT           *string  `json:"cacheStatusGT,omitempty"`
+	CacheStatusGTE          *string  `json:"cacheStatusGTE,omitempty"`
+	CacheStatusLT           *string  `json:"cacheStatusLT,omitempty"`
+	CacheStatusLTE          *string  `json:"cacheStatusLTE,omitempty"`
+	CacheStatusContains     *string  `json:"cacheStatusContains,omitempty"`
+	CacheStatusHasPrefix    *string  `json:"cacheStatusHasPrefix,omitempty"`
+	CacheStatusHasSuffix    *string  `json:"cacheStatusHasSuffix,omitempty"`
+	CacheStatusIsNil        bool     `json:"cacheStatusIsNil,omitempty"`
+	CacheStatusNotNil       bool     `json:"cacheStatusNotNil,omitempty"`
+	CacheStatusEqualFold    *string  `json:"cacheStatusEqualFold,omitempty"`
+	CacheStatusContainsFold *string  `json:"cacheStatusContainsFold,omitempty"`
+
+	// "sampled" field predicates.
+	Sampled       *bool `json:"sampled,omitempty"`
+	SampledNEQ    *bool `json:"sampledNEQ,omitempty"`
+	SampledIsNil  bool  `json:"sampledIsNil,omitempty"`
+	SampledNotNil bool  `json:"sampledNotNil,omitempty"`
+
 	// "bazel_invocation" edge predicates.
 	HasBazelInvocation     *bool                        `json:"hasBazelInvocation,omitempty"`
 	HasBazelInvocationWith []*BazelInvocationWhereInput `json:"hasBazelInvocationWith,omitempty"`
@@ -568,6 +608,108 @@ func (i *ActionWhereInput) P() (predicate.Action, error) {
 	}
 	if i.FailureMessageContainsFold != nil {
 		predicates = append(predicates, action.FailureMessageContainsFold(*i.FailureMessageContainsFold))
+	}
+	if i.PrimaryOutput != nil {
+		predicates = append(predicates, action.PrimaryOutputEQ(*i.PrimaryOutput))
+	}
+	if i.PrimaryOutputNEQ != nil {
+		predicates = append(predicates, action.PrimaryOutputNEQ(*i.PrimaryOutputNEQ))
+	}
+	if len(i.PrimaryOutputIn) > 0 {
+		predicates = append(predicates, action.PrimaryOutputIn(i.PrimaryOutputIn...))
+	}
+	if len(i.PrimaryOutputNotIn) > 0 {
+		predicates = append(predicates, action.PrimaryOutputNotIn(i.PrimaryOutputNotIn...))
+	}
+	if i.PrimaryOutputGT != nil {
+		predicates = append(predicates, action.PrimaryOutputGT(*i.PrimaryOutputGT))
+	}
+	if i.PrimaryOutputGTE != nil {
+		predicates = append(predicates, action.PrimaryOutputGTE(*i.PrimaryOutputGTE))
+	}
+	if i.PrimaryOutputLT != nil {
+		predicates = append(predicates, action.PrimaryOutputLT(*i.PrimaryOutputLT))
+	}
+	if i.PrimaryOutputLTE != nil {
+		predicates = append(predicates, action.PrimaryOutputLTE(*i.PrimaryOutputLTE))
+	}
+	if i.PrimaryOutputContains != nil {
+		predicates = append(predicates, action.PrimaryOutputContains(*i.PrimaryOutputContains))
+	}
+	if i.PrimaryOutputHasPrefix != nil {
+		predicates = append(predicates, action.PrimaryOutputHasPrefix(*i.PrimaryOutputHasPrefix))
+	}
+	if i.PrimaryOutputHasSuffix != nil {
+		predicates = append(predicates, action.PrimaryOutputHasSuffix(*i.PrimaryOutputHasSuffix))
+	}
+	if i.PrimaryOutputIsNil {
+		predicates = append(predicates, action.PrimaryOutputIsNil())
+	}
+	if i.PrimaryOutputNotNil {
+		predicates = append(predicates, action.PrimaryOutputNotNil())
+	}
+	if i.PrimaryOutputEqualFold != nil {
+		predicates = append(predicates, action.PrimaryOutputEqualFold(*i.PrimaryOutputEqualFold))
+	}
+	if i.PrimaryOutputContainsFold != nil {
+		predicates = append(predicates, action.PrimaryOutputContainsFold(*i.PrimaryOutputContainsFold))
+	}
+	if i.CacheStatus != nil {
+		predicates = append(predicates, action.CacheStatusEQ(*i.CacheStatus))
+	}
+	if i.CacheStatusNEQ != nil {
+		predicates = append(predicates, action.CacheStatusNEQ(*i.CacheStatusNEQ))
+	}
+	if len(i.CacheStatusIn) > 0 {
+		predicates = append(predicates, action.CacheStatusIn(i.CacheStatusIn...))
+	}
+	if len(i.CacheStatusNotIn) > 0 {
+		predicates = append(predicates, action.CacheStatusNotIn(i.CacheStatusNotIn...))
+	}
+	if i.CacheStatusGT != nil {
+		predicates = append(predicates, action.CacheStatusGT(*i.CacheStatusGT))
+	}
+	if i.CacheStatusGTE != nil {
+		predicates = append(predicates, action.CacheStatusGTE(*i.CacheStatusGTE))
+	}
+	if i.CacheStatusLT != nil {
+		predicates = append(predicates, action.CacheStatusLT(*i.CacheStatusLT))
+	}
+	if i.CacheStatusLTE != nil {
+		predicates = append(predicates, action.CacheStatusLTE(*i.CacheStatusLTE))
+	}
+	if i.CacheStatusContains != nil {
+		predicates = append(predicates, action.CacheStatusContains(*i.CacheStatusContains))
+	}
+	if i.CacheStatusHasPrefix != nil {
+		predicates = append(predicates, action.CacheStatusHasPrefix(*i.CacheStatusHasPrefix))
+	}
+	if i.CacheStatusHasSuffix != nil {
+		predicates = append(predicates, action.CacheStatusHasSuffix(*i.CacheStatusHasSuffix))
+	}
+	if i.CacheStatusIsNil {
+		predicates = append(predicates, action.CacheStatusIsNil())
+	}
+	if i.CacheStatusNotNil {
+		predicates = append(predicates, action.CacheStatusNotNil())
+	}
+	if i.CacheStatusEqualFold != nil {
+		predicates = append(predicates, action.CacheStatusEqualFold(*i.CacheStatusEqualFold))
+	}
+	if i.CacheStatusContainsFold != nil {
+		predicates = append(predicates, action.CacheStatusContainsFold(*i.CacheStatusContainsFold))
+	}
+	if i.Sampled != nil {
+		predicates = append(predicates, action.SampledEQ(*i.Sampled))
+	}
+	if i.SampledNEQ != nil {
+		predicates = append(predicates, action.SampledNEQ(*i.SampledNEQ))
+	}
+	if i.SampledIsNil {
+		predicates = append(predicates, action.SampledIsNil())
+	}
+	if i.SampledNotNil {
+		predicates = append(predicates, action.SampledNotNil())
 	}
 
 	if i.HasBazelInvocation != nil {

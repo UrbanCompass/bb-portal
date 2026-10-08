@@ -34,6 +34,12 @@ const (
 	FieldFailureCode = "failure_code"
 	// FieldFailureMessage holds the string denoting the failure_message field in the database.
 	FieldFailureMessage = "failure_message"
+	// FieldPrimaryOutput holds the string denoting the primary_output field in the database.
+	FieldPrimaryOutput = "primary_output"
+	// FieldCacheStatus holds the string denoting the cache_status field in the database.
+	FieldCacheStatus = "cache_status"
+	// FieldSampled holds the string denoting the sampled field in the database.
+	FieldSampled = "sampled"
 	// FieldStdoutFileID holds the string denoting the stdout_file_id field in the database.
 	FieldStdoutFileID = "stdout_file_id"
 	// FieldStderrFileID holds the string denoting the stderr_file_id field in the database.
@@ -92,6 +98,9 @@ var Columns = []string{
 	FieldEndTime,
 	FieldFailureCode,
 	FieldFailureMessage,
+	FieldPrimaryOutput,
+	FieldCacheStatus,
+	FieldSampled,
 	FieldStdoutFileID,
 	FieldStderrFileID,
 }
@@ -162,6 +171,21 @@ func ByFailureCode(opts ...sql.OrderTermOption) OrderOption {
 // ByFailureMessage orders the results by the failure_message field.
 func ByFailureMessage(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFailureMessage, opts...).ToFunc()
+}
+
+// ByPrimaryOutput orders the results by the primary_output field.
+func ByPrimaryOutput(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPrimaryOutput, opts...).ToFunc()
+}
+
+// ByCacheStatus orders the results by the cache_status field.
+func ByCacheStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCacheStatus, opts...).ToFunc()
+}
+
+// BySampled orders the results by the sampled field.
+func BySampled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSampled, opts...).ToFunc()
 }
 
 // ByStdoutFileID orders the results by the stdout_file_id field.

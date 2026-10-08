@@ -33,6 +33,20 @@ func (r *buildEventRecorder) saveRemainingBatch(
 		return util.StatusWrap(err, "Failed to create transaction")
 	}
 	defer tx.Rollback()
+
+	// The sampler and sampledActionIDs live in memory, outside the
+	// transaction. If it rolls back, the rows they refer to are gone, and the
+	// retry replays the same events, so restore both to their pre-batch state.
+	samplerBefore := r.actionSampler.clone()
+	sampledIDsBefore := append([]int64(nil), r.sampledActionIDs...)
+	committed := false
+	defer func() {
+		if !committed {
+			r.actionSampler = samplerBefore
+			r.sampledActionIDs = sampledIDsBefore
+		}
+	}()
+
 	lock, err := tx.Sqlc().LockBazelInvocationCompletion(ctx, int64(r.InvocationDbID))
 	if err != nil {
 		return util.StatusWrap(err, "Failed to lock bep completed for invocation")
@@ -57,6 +71,7 @@ func (r *buildEventRecorder) saveRemainingBatch(
 	if err != nil {
 		return util.StatusWrap(err, "Failed to commit transaction")
 	}
+	committed = true
 	return nil
 }
 
