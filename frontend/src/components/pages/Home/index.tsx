@@ -174,7 +174,9 @@ const RecentBuildsPanel: React.FC = () => {
 
 const WorkerPoolPanel: React.FC = () => {
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["listPlatformQueues"],
+    // Must not share a key with PlatformQueuesTable: that query caches a
+    // flattened array, while this one caches the raw response object.
+    queryKey: ["listPlatformQueues-home"],
     queryFn: () => buildQueueStateClient.listPlatformQueues({}),
     refetchInterval: 30_000,
   });
