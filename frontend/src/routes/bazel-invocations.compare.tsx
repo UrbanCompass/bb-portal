@@ -560,6 +560,19 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
         v ? <Tag>{v}</Tag> : <Typography.Text type="secondary">—</Typography.Text>,
     },
     {
+      title: "Primary output",
+      dataIndex: "primaryOutput",
+      ellipsis: true,
+      render: (v: string | null) =>
+        v ? (
+          <Typography.Text code style={{ fontSize: 11 }}>
+            {v}
+          </Typography.Text>
+        ) : (
+          <Typography.Text type="secondary">—</Typography.Text>
+        ),
+    },
+    {
       title: "Left cache status",
       width: 160,
       render: (_: unknown, row: JoinedActionRow) => (
@@ -613,7 +626,7 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
         <Alert
           type="info"
           message="No sampled actions found"
-          description="Neither invocation had actions persisted in the sample. Actions are recorded for the first 100 successful actions per invocation."
+          description="Neither invocation had actions persisted in the sample. Failed actions are always recorded; successful actions are a random sample (up to 100 per invocation)."
           showIcon
         />
       ) : (
@@ -626,7 +639,7 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
             if (!row.onLeft || !row.onRight) return "";
             if (row.leftStatus !== row.rightStatus)
               return "action-compare-row-diff";
-            return "";
+            return "action-compare-row-same";
           }}
           style={{ overflow: "auto" }}
         />
@@ -635,6 +648,9 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
       <style>{`
         .action-compare-row-diff td {
           background: #fff7e6 !important;
+        }
+        .action-compare-row-same td {
+          opacity: 0.6;
         }
         [data-theme="dark"] .action-compare-row-diff td {
           background: #2b2000 !important;
