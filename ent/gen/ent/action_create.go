@@ -147,6 +147,48 @@ func (_c *ActionCreate) SetNillableFailureMessage(v *string) *ActionCreate {
 	return _c
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (_c *ActionCreate) SetPrimaryOutput(v string) *ActionCreate {
+	_c.mutation.SetPrimaryOutput(v)
+	return _c
+}
+
+// SetNillablePrimaryOutput sets the "primary_output" field if the given value is not nil.
+func (_c *ActionCreate) SetNillablePrimaryOutput(v *string) *ActionCreate {
+	if v != nil {
+		_c.SetPrimaryOutput(*v)
+	}
+	return _c
+}
+
+// SetSampled sets the "sampled" field.
+func (_c *ActionCreate) SetSampled(v bool) *ActionCreate {
+	_c.mutation.SetSampled(v)
+	return _c
+}
+
+// SetNillableSampled sets the "sampled" field if the given value is not nil.
+func (_c *ActionCreate) SetNillableSampled(v *bool) *ActionCreate {
+	if v != nil {
+		_c.SetSampled(*v)
+	}
+	return _c
+}
+
+// SetSampleKey sets the "sample_key" field.
+func (_c *ActionCreate) SetSampleKey(v int64) *ActionCreate {
+	_c.mutation.SetSampleKey(v)
+	return _c
+}
+
+// SetNillableSampleKey sets the "sample_key" field if the given value is not nil.
+func (_c *ActionCreate) SetNillableSampleKey(v *int64) *ActionCreate {
+	if v != nil {
+		_c.SetSampleKey(*v)
+	}
+	return _c
+}
+
 // SetStdoutFileID sets the "stdout_file_id" field.
 func (_c *ActionCreate) SetStdoutFileID(v int64) *ActionCreate {
 	_c.mutation.SetStdoutFileID(v)
@@ -346,6 +388,18 @@ func (_c *ActionCreate) createSpec() (*Action, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.FailureMessage(); ok {
 		_spec.SetField(action.FieldFailureMessage, field.TypeString, value)
 		_node.FailureMessage = value
+	}
+	if value, ok := _c.mutation.PrimaryOutput(); ok {
+		_spec.SetField(action.FieldPrimaryOutput, field.TypeString, value)
+		_node.PrimaryOutput = value
+	}
+	if value, ok := _c.mutation.Sampled(); ok {
+		_spec.SetField(action.FieldSampled, field.TypeBool, value)
+		_node.Sampled = value
+	}
+	if value, ok := _c.mutation.SampleKey(); ok {
+		_spec.SetField(action.FieldSampleKey, field.TypeInt64, value)
+		_node.SampleKey = value
 	}
 	if nodes := _c.mutation.BazelInvocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -629,6 +683,66 @@ func (u *ActionUpsert) ClearFailureMessage() *ActionUpsert {
 	return u
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (u *ActionUpsert) SetPrimaryOutput(v string) *ActionUpsert {
+	u.Set(action.FieldPrimaryOutput, v)
+	return u
+}
+
+// UpdatePrimaryOutput sets the "primary_output" field to the value that was provided on create.
+func (u *ActionUpsert) UpdatePrimaryOutput() *ActionUpsert {
+	u.SetExcluded(action.FieldPrimaryOutput)
+	return u
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (u *ActionUpsert) ClearPrimaryOutput() *ActionUpsert {
+	u.SetNull(action.FieldPrimaryOutput)
+	return u
+}
+
+// SetSampled sets the "sampled" field.
+func (u *ActionUpsert) SetSampled(v bool) *ActionUpsert {
+	u.Set(action.FieldSampled, v)
+	return u
+}
+
+// UpdateSampled sets the "sampled" field to the value that was provided on create.
+func (u *ActionUpsert) UpdateSampled() *ActionUpsert {
+	u.SetExcluded(action.FieldSampled)
+	return u
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (u *ActionUpsert) ClearSampled() *ActionUpsert {
+	u.SetNull(action.FieldSampled)
+	return u
+}
+
+// SetSampleKey sets the "sample_key" field.
+func (u *ActionUpsert) SetSampleKey(v int64) *ActionUpsert {
+	u.Set(action.FieldSampleKey, v)
+	return u
+}
+
+// UpdateSampleKey sets the "sample_key" field to the value that was provided on create.
+func (u *ActionUpsert) UpdateSampleKey() *ActionUpsert {
+	u.SetExcluded(action.FieldSampleKey)
+	return u
+}
+
+// AddSampleKey adds v to the "sample_key" field.
+func (u *ActionUpsert) AddSampleKey(v int64) *ActionUpsert {
+	u.Add(action.FieldSampleKey, v)
+	return u
+}
+
+// ClearSampleKey clears the value of the "sample_key" field.
+func (u *ActionUpsert) ClearSampleKey() *ActionUpsert {
+	u.SetNull(action.FieldSampleKey)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -875,6 +989,76 @@ func (u *ActionUpsertOne) UpdateFailureMessage() *ActionUpsertOne {
 func (u *ActionUpsertOne) ClearFailureMessage() *ActionUpsertOne {
 	return u.Update(func(s *ActionUpsert) {
 		s.ClearFailureMessage()
+	})
+}
+
+// SetPrimaryOutput sets the "primary_output" field.
+func (u *ActionUpsertOne) SetPrimaryOutput(v string) *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetPrimaryOutput(v)
+	})
+}
+
+// UpdatePrimaryOutput sets the "primary_output" field to the value that was provided on create.
+func (u *ActionUpsertOne) UpdatePrimaryOutput() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdatePrimaryOutput()
+	})
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (u *ActionUpsertOne) ClearPrimaryOutput() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearPrimaryOutput()
+	})
+}
+
+// SetSampled sets the "sampled" field.
+func (u *ActionUpsertOne) SetSampled(v bool) *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetSampled(v)
+	})
+}
+
+// UpdateSampled sets the "sampled" field to the value that was provided on create.
+func (u *ActionUpsertOne) UpdateSampled() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdateSampled()
+	})
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (u *ActionUpsertOne) ClearSampled() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearSampled()
+	})
+}
+
+// SetSampleKey sets the "sample_key" field.
+func (u *ActionUpsertOne) SetSampleKey(v int64) *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetSampleKey(v)
+	})
+}
+
+// AddSampleKey adds v to the "sample_key" field.
+func (u *ActionUpsertOne) AddSampleKey(v int64) *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.AddSampleKey(v)
+	})
+}
+
+// UpdateSampleKey sets the "sample_key" field to the value that was provided on create.
+func (u *ActionUpsertOne) UpdateSampleKey() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdateSampleKey()
+	})
+}
+
+// ClearSampleKey clears the value of the "sample_key" field.
+func (u *ActionUpsertOne) ClearSampleKey() *ActionUpsertOne {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearSampleKey()
 	})
 }
 
@@ -1289,6 +1473,76 @@ func (u *ActionUpsertBulk) UpdateFailureMessage() *ActionUpsertBulk {
 func (u *ActionUpsertBulk) ClearFailureMessage() *ActionUpsertBulk {
 	return u.Update(func(s *ActionUpsert) {
 		s.ClearFailureMessage()
+	})
+}
+
+// SetPrimaryOutput sets the "primary_output" field.
+func (u *ActionUpsertBulk) SetPrimaryOutput(v string) *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetPrimaryOutput(v)
+	})
+}
+
+// UpdatePrimaryOutput sets the "primary_output" field to the value that was provided on create.
+func (u *ActionUpsertBulk) UpdatePrimaryOutput() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdatePrimaryOutput()
+	})
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (u *ActionUpsertBulk) ClearPrimaryOutput() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearPrimaryOutput()
+	})
+}
+
+// SetSampled sets the "sampled" field.
+func (u *ActionUpsertBulk) SetSampled(v bool) *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetSampled(v)
+	})
+}
+
+// UpdateSampled sets the "sampled" field to the value that was provided on create.
+func (u *ActionUpsertBulk) UpdateSampled() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdateSampled()
+	})
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (u *ActionUpsertBulk) ClearSampled() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearSampled()
+	})
+}
+
+// SetSampleKey sets the "sample_key" field.
+func (u *ActionUpsertBulk) SetSampleKey(v int64) *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.SetSampleKey(v)
+	})
+}
+
+// AddSampleKey adds v to the "sample_key" field.
+func (u *ActionUpsertBulk) AddSampleKey(v int64) *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.AddSampleKey(v)
+	})
+}
+
+// UpdateSampleKey sets the "sample_key" field to the value that was provided on create.
+func (u *ActionUpsertBulk) UpdateSampleKey() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.UpdateSampleKey()
+	})
+}
+
+// ClearSampleKey clears the value of the "sample_key" field.
+func (u *ActionUpsertBulk) ClearSampleKey() *ActionUpsertBulk {
+	return u.Update(func(s *ActionUpsert) {
+		s.ClearSampleKey()
 	})
 }
 

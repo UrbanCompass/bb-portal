@@ -181,6 +181,29 @@ type ActionWhereInput struct {
 	FailureMessageEqualFold    *string  `json:"failureMessageEqualFold,omitempty"`
 	FailureMessageContainsFold *string  `json:"failureMessageContainsFold,omitempty"`
 
+	// "primary_output" field predicates.
+	PrimaryOutput             *string  `json:"primaryOutput,omitempty"`
+	PrimaryOutputNEQ          *string  `json:"primaryOutputNEQ,omitempty"`
+	PrimaryOutputIn           []string `json:"primaryOutputIn,omitempty"`
+	PrimaryOutputNotIn        []string `json:"primaryOutputNotIn,omitempty"`
+	PrimaryOutputGT           *string  `json:"primaryOutputGT,omitempty"`
+	PrimaryOutputGTE          *string  `json:"primaryOutputGTE,omitempty"`
+	PrimaryOutputLT           *string  `json:"primaryOutputLT,omitempty"`
+	PrimaryOutputLTE          *string  `json:"primaryOutputLTE,omitempty"`
+	PrimaryOutputContains     *string  `json:"primaryOutputContains,omitempty"`
+	PrimaryOutputHasPrefix    *string  `json:"primaryOutputHasPrefix,omitempty"`
+	PrimaryOutputHasSuffix    *string  `json:"primaryOutputHasSuffix,omitempty"`
+	PrimaryOutputIsNil        bool     `json:"primaryOutputIsNil,omitempty"`
+	PrimaryOutputNotNil       bool     `json:"primaryOutputNotNil,omitempty"`
+	PrimaryOutputEqualFold    *string  `json:"primaryOutputEqualFold,omitempty"`
+	PrimaryOutputContainsFold *string  `json:"primaryOutputContainsFold,omitempty"`
+
+	// "sampled" field predicates.
+	Sampled       *bool `json:"sampled,omitempty"`
+	SampledNEQ    *bool `json:"sampledNEQ,omitempty"`
+	SampledIsNil  bool  `json:"sampledIsNil,omitempty"`
+	SampledNotNil bool  `json:"sampledNotNil,omitempty"`
+
 	// "bazel_invocation" edge predicates.
 	HasBazelInvocation     *bool                        `json:"hasBazelInvocation,omitempty"`
 	HasBazelInvocationWith []*BazelInvocationWhereInput `json:"hasBazelInvocationWith,omitempty"`
@@ -568,6 +591,63 @@ func (i *ActionWhereInput) P() (predicate.Action, error) {
 	}
 	if i.FailureMessageContainsFold != nil {
 		predicates = append(predicates, action.FailureMessageContainsFold(*i.FailureMessageContainsFold))
+	}
+	if i.PrimaryOutput != nil {
+		predicates = append(predicates, action.PrimaryOutputEQ(*i.PrimaryOutput))
+	}
+	if i.PrimaryOutputNEQ != nil {
+		predicates = append(predicates, action.PrimaryOutputNEQ(*i.PrimaryOutputNEQ))
+	}
+	if len(i.PrimaryOutputIn) > 0 {
+		predicates = append(predicates, action.PrimaryOutputIn(i.PrimaryOutputIn...))
+	}
+	if len(i.PrimaryOutputNotIn) > 0 {
+		predicates = append(predicates, action.PrimaryOutputNotIn(i.PrimaryOutputNotIn...))
+	}
+	if i.PrimaryOutputGT != nil {
+		predicates = append(predicates, action.PrimaryOutputGT(*i.PrimaryOutputGT))
+	}
+	if i.PrimaryOutputGTE != nil {
+		predicates = append(predicates, action.PrimaryOutputGTE(*i.PrimaryOutputGTE))
+	}
+	if i.PrimaryOutputLT != nil {
+		predicates = append(predicates, action.PrimaryOutputLT(*i.PrimaryOutputLT))
+	}
+	if i.PrimaryOutputLTE != nil {
+		predicates = append(predicates, action.PrimaryOutputLTE(*i.PrimaryOutputLTE))
+	}
+	if i.PrimaryOutputContains != nil {
+		predicates = append(predicates, action.PrimaryOutputContains(*i.PrimaryOutputContains))
+	}
+	if i.PrimaryOutputHasPrefix != nil {
+		predicates = append(predicates, action.PrimaryOutputHasPrefix(*i.PrimaryOutputHasPrefix))
+	}
+	if i.PrimaryOutputHasSuffix != nil {
+		predicates = append(predicates, action.PrimaryOutputHasSuffix(*i.PrimaryOutputHasSuffix))
+	}
+	if i.PrimaryOutputIsNil {
+		predicates = append(predicates, action.PrimaryOutputIsNil())
+	}
+	if i.PrimaryOutputNotNil {
+		predicates = append(predicates, action.PrimaryOutputNotNil())
+	}
+	if i.PrimaryOutputEqualFold != nil {
+		predicates = append(predicates, action.PrimaryOutputEqualFold(*i.PrimaryOutputEqualFold))
+	}
+	if i.PrimaryOutputContainsFold != nil {
+		predicates = append(predicates, action.PrimaryOutputContainsFold(*i.PrimaryOutputContainsFold))
+	}
+	if i.Sampled != nil {
+		predicates = append(predicates, action.SampledEQ(*i.Sampled))
+	}
+	if i.SampledNEQ != nil {
+		predicates = append(predicates, action.SampledNEQ(*i.SampledNEQ))
+	}
+	if i.SampledIsNil {
+		predicates = append(predicates, action.SampledIsNil())
+	}
+	if i.SampledNotNil {
+		predicates = append(predicates, action.SampledNotNil())
 	}
 
 	if i.HasBazelInvocation != nil {

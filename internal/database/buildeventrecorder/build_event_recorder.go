@@ -67,6 +67,7 @@ type buildEventRecorder struct {
 	tracer         trace.Tracer
 	dataExtractors *DataExtractors
 	buildKey       string
+	actionSampling actionSamplingConfig
 
 	InstanceName     string
 	InstanceNameDbID int64
@@ -144,6 +145,7 @@ func NewBuildEventRecorder(
 		tracer:         tracer,
 		dataExtractors: dataExtractors,
 		buildKey:       buildKey,
+		actionSampling: actionSamplingConfigFromEnv(),
 
 		InstanceName:     instanceName,
 		InstanceNameDbID: instanceNameDbID,

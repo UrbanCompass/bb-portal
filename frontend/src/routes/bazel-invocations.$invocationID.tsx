@@ -37,6 +37,7 @@ const BAZEL_INVOCATION_COMMON_FRAGMENT = gql(/* GraphQL */ `
     }
     actions {
       id
+      success
     }
     profile {
       ...FileDetails

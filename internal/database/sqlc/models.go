@@ -23,6 +23,9 @@ type Action struct {
 	EndTime           sql.NullTime
 	FailureCode       sql.NullString
 	FailureMessage    sql.NullString
+	PrimaryOutput     sql.NullString
+	Sampled           sql.NullBool
+	SampleKey         sql.NullInt64
 	ConfigurationID   int64
 	StdoutFileID      sql.NullInt64
 	StderrFileID      sql.NullInt64

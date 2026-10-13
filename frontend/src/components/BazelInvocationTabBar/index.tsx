@@ -22,7 +22,11 @@ const getMenuItems = (
 ): ItemType[] => {
   const { invocationID } = invocation;
 
-  const showActionsTab = !!invocation.actions?.length;
+  // Successful actions are stored as a sample, but this tab only lists
+  // failed actions.
+  const showActionsTab = !!invocation.actions?.some(
+    (action) => action.success === false,
+  );
   const showMetricsTab = !!invocation.metrics;
   const showSourceControlTab = !!invocation.sourceControl?.length;
   const showTargetsTab = !!env.featureFlags?.bes?.pageTargets;
