@@ -29,6 +29,13 @@ type actionSampler interface {
 	// action should not be persisted. If the slot is already occupied, the
 	// previous occupant must be evicted by the caller.
 	admit() int
+	// resume tells the sampler that persisted successful actions of this
+	// invocation are already stored, so a new recorder (for instance after
+	// a BES reconnect) continues the sample instead of starting over. Only
+	// the number of stored rows survives, not how many successes were seen
+	// before them, so the sampler only ever moves forward: a recorder that
+	// has already seen more successes than are stored keeps its own count.
+	resume(persisted int)
 	// clone returns an independent copy of the sampler's current state, so
 	// the state can be restored if the transaction that consumed slots rolls
 	// back.
@@ -115,4 +122,16 @@ func (s *reservoirSampler) clone() actionSampler {
 func (s *firstNSampler) clone() actionSampler {
 	c := *s
 	return &c
+}
+
+func (s *reservoirSampler) resume(persisted int) {
+	if persisted > s.seen {
+		s.seen = persisted
+	}
+}
+
+func (s *firstNSampler) resume(persisted int) {
+	if persisted > s.seen {
+		s.seen = persisted
+	}
 }

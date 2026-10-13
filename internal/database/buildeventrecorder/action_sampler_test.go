@@ -104,3 +104,32 @@ func TestActionSamplingConfigFromEnv(t *testing.T) {
 		})
 	}
 }
+
+func TestSamplerResumeOnlyMovesForward(t *testing.T) {
+	for name, cfg := range map[string]actionSamplingConfig{
+		"reservoir": {strategy: actionSampleStrategyReservoir, cap: 3},
+		"first":     {strategy: actionSampleStrategyFirst, cap: 3},
+	} {
+		t.Run(name, func(t *testing.T) {
+			// A fresh sampler continues after the rows already stored.
+			s := cfg.newSampler(func(int) int { return 0 })
+			s.resume(3)
+			if got := s.admit(); name == "first" && got != -1 {
+				t.Fatalf("first-N admitted slot %d after resuming a full sample", got)
+			}
+
+			// A sampler that has seen more successes than are stored must
+			// not be rewound, or later actions become over-represented.
+			s = cfg.newSampler(func(int) int { return 0 })
+			for i := 0; i < 10; i++ {
+				s.admit()
+			}
+			s.resume(3)
+			if name == "reservoir" {
+				if r := s.(*reservoirSampler); r.seen != 10 {
+					t.Fatalf("resume rewound seen to %d, want 10", r.seen)
+				}
+			}
+		})
+	}
+}

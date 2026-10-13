@@ -193,3 +193,56 @@ func TestSaveRemainingBatchRollbackRestoresSampler(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, sampleCap, count, "the cap must hold after the retry")
 }
+
+// TestSampleCapHoldsAcrossRecorders checks that the sample cap is enforced per
+// invocation, not per recorder. Bazel reopens the BES stream after a dropped
+// connection, which creates a new recorder for the same invocation. Its
+// sampler must pick up the rows the previous recorder already persisted.
+func TestSampleCapHoldsAcrossRecorders(t *testing.T) {
+	ctx := dbauthservice.NewContextWithDbAuthServiceBypass(context.Background())
+	db := testutils.SetupTestDB(t, dbProvider)
+	client := db.Ent()
+	instanceName := testutils.CreateInstanceName(ctx, t, client, "test")
+	inv, err := testutils.StartCreateInvocation(client, instanceName).Save(ctx)
+	require.NoError(t, err)
+
+	const sampleCap = 2
+	successBatch := func(from, to int) []buildeventrecorder.BuildEventWithInfo {
+		var batch []buildeventrecorder.BuildEventWithInfo
+		for i := from; i <= to; i++ {
+			label := fmt.Sprintf("//pkg:t%d", i)
+			batch = append(batch, buildeventrecorder.BuildEventWithInfo{
+				SequenceNumber: uint32(i),
+				Event: &bes.BuildEvent{
+					Id: &bes.BuildEventId{Id: &bes.BuildEventId_ActionCompleted{
+						ActionCompleted: &bes.BuildEventId_ActionCompletedId{
+							Label:         label,
+							PrimaryOutput: "out/" + label,
+							Configuration: &bes.BuildEventId_ConfigurationId{Id: "system"},
+						},
+					}},
+					Payload: &bes.BuildEvent_Action{Action: &bes.ActionExecuted{Success: true}},
+				},
+			})
+		}
+		return batch
+	}
+	countSampled := func() int {
+		n, err := client.Action.Query().Count(ctx)
+		require.NoError(t, err)
+		return n
+	}
+
+	// First stream fills the reservoir.
+	first := buildeventrecorder.NewRecorderForTest(db, inv.ID, sampleCap)
+	require.NoError(t, first.LoadHandledEvents(ctx))
+	require.NoError(t, first.SaveRemaining(ctx, successBatch(1, 2)))
+	require.Equal(t, sampleCap, countSampled())
+
+	// The stream drops and Bazel reconnects: a new recorder, same invocation,
+	// and its sampler starts out empty.
+	second := buildeventrecorder.NewRecorderForTest(db, inv.ID, sampleCap)
+	require.NoError(t, second.LoadHandledEvents(ctx))
+	require.NoError(t, second.SaveRemaining(ctx, successBatch(3, 4)))
+	require.Equal(t, sampleCap, countSampled(), "the cap must hold across a reconnect")
+}

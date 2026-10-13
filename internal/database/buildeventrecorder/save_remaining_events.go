@@ -5,6 +5,8 @@ import (
 	"database/sql"
 
 	bes "github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto"
+	"github.com/buildbarn/bb-portal/ent/gen/ent"
+	"github.com/buildbarn/bb-portal/ent/gen/ent/action"
 	"github.com/buildbarn/bb-portal/internal/database"
 	"github.com/buildbarn/bb-storage/pkg/util"
 	"go.opentelemetry.io/otel/attribute"
@@ -54,6 +56,19 @@ func (r *buildEventRecorder) saveRemainingBatch(
 	if lock.BepCompleted {
 		return status.Error(codes.FailedPrecondition, "Attempted to insert build events but the invocation was already completed.")
 	}
+
+	// The sample belongs to the invocation, not to this recorder. A BES
+	// reconnect creates a new recorder whose sampler knows nothing about
+	// the rows an earlier stream stored, so reload them under the lock.
+	sampledIDs, err := tx.Ent().Action.Query().
+		Where(action.BazelInvocationID(r.InvocationDbID), action.Sampled(true)).
+		Order(ent.Asc(action.FieldID)).
+		IDs(ctx)
+	if err != nil {
+		return util.StatusWrap(err, "Failed to load sampled actions")
+	}
+	r.sampledActionIDs = sampledIDs
+	r.actionSampler.resume(len(sampledIDs))
 
 	for _, info := range batch {
 		buildEvent := info.Event
