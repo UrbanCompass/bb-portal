@@ -35,8 +35,12 @@ import type {
   InvocationCompareDataFragment,
   RunnerCount,
 } from "@/graphql/__generated__/graphql";
-import type { JoinedActionRow } from "@/utils/actionComparison";
-import { buildJoinedRows } from "@/utils/actionComparison";
+import type { JoinedActionRow, MissReasonRow } from "@/utils/actionComparison";
+import {
+  buildJoinedRows,
+  buildMissReasonRows,
+  DURATION_JUMP_RATIO,
+} from "@/utils/actionComparison";
 import { generatePageTitle } from "@/utils/generatePageTitle";
 import { readableDurationFromMilliseconds } from "@/utils/time";
 
@@ -100,6 +104,15 @@ const INVOCATION_COMPARE_FRAGMENT = gql(/* GraphQL */ `
           id
           name
           actionsExecuted
+        }
+        actionCacheStatistics {
+          id
+          misses
+          missDetails {
+            id
+            reason
+            count
+          }
         }
       }
     }
@@ -235,6 +248,8 @@ function RouteComponent() {
       </Row>
       {left && right && leftInv && rightInv && (
         <>
+          <Divider />
+          <MissReasonComparison left={leftInv} right={rightInv} />
           <Divider />
           <ActionComparisonPanel
             leftID={left}
@@ -490,16 +505,83 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
   );
 };
 
+// ─── Cache Miss Reasons ─────────────────────────────────────────────────────
+
+const MissReasonComparison: React.FC<{
+  left: InvocationData;
+  right: InvocationData;
+}> = ({ left, right }) => {
+  const leftStats = left.metrics?.actionSummary?.actionCacheStatistics;
+  const rightStats = right.metrics?.actionSummary?.actionCacheStatistics;
+  const rows = buildMissReasonRows(
+    leftStats?.missDetails ?? [],
+    rightStats?.missDetails ?? [],
+  );
+
+  const columns: ColumnsType<MissReasonRow> = [
+    {
+      title: "Reason",
+      dataIndex: "reason",
+      render: (v: string) => <Tag>{v}</Tag>,
+    },
+    { title: "Left", dataIndex: "left", width: 120, align: "right" },
+    { title: "Right", dataIndex: "right", width: 120, align: "right" },
+    {
+      title: "Change",
+      width: 120,
+      align: "right",
+      render: (_: unknown, row: MissReasonRow) => {
+        const d = row.right - row.left;
+        if (d === 0)
+          return <Typography.Text type="secondary">0</Typography.Text>;
+        return (
+          <Typography.Text type={d > 0 ? "danger" : "success"}>
+            {d > 0 ? `+${d}` : d}
+          </Typography.Text>
+        );
+      },
+    },
+  ];
+
+  return (
+    <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+      <Space>
+        <InfoCircleOutlined />
+        <Typography.Text strong>Cache Miss Reasons</Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          Bazel's local action cache · {leftStats?.misses ?? 0} left /{" "}
+          {rightStats?.misses ?? 0} right misses
+        </Typography.Text>
+      </Space>
+      {rows.length === 0 ? (
+        <Typography.Text type="secondary">
+          No action cache misses reported by either invocation.
+        </Typography.Text>
+      ) : (
+        <Table<MissReasonRow>
+          dataSource={rows}
+          columns={columns}
+          rowKey="reason"
+          size="small"
+          pagination={false}
+        />
+      )}
+    </Space>
+  );
+};
+
 // ─── Action Comparison Panel ────────────────────────────────────────────────
 
 function ActionResultCell({
   outcome,
   durationMs,
   present,
+  slower,
 }: {
   outcome: string | null;
   durationMs: number | null;
   present: boolean;
+  slower: boolean;
 }) {
   if (!present) {
     return <Badge status="default" text="not sampled" />;
@@ -508,7 +590,11 @@ function ActionResultCell({
     <Space size={4}>
       <Tag color={outcome === "success" ? "green" : "red"}>{outcome}</Tag>
       {durationMs !== null && (
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        <Typography.Text
+          type={slower ? "warning" : "secondary"}
+          strong={slower}
+          style={{ fontSize: 12 }}
+        >
           {readableDurationFromMilliseconds(durationMs, { smallestUnit: "ms" })}
         </Typography.Text>
       )}
@@ -559,6 +645,7 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
   );
 
   const matchedCount = rows.filter((r) => r.onLeft && r.onRight).length;
+  const slowerCount = rows.filter((r) => r.slowerSide).length;
 
   const columns: ColumnsType<JoinedActionRow> = [
     {
@@ -603,6 +690,7 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
           outcome={row.leftOutcome}
           durationMs={row.leftDurationMs}
           present={row.onLeft}
+          slower={row.slowerSide === "left"}
         />
       ),
     },
@@ -614,6 +702,7 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
           outcome={row.rightOutcome}
           durationMs={row.rightDurationMs}
           present={row.onRight}
+          slower={row.slowerSide === "right"}
         />
       ),
     },
@@ -631,6 +720,11 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
         .filter(Boolean)
         .join(" / ");
       parts.push(`of ${denom} total`);
+    }
+    if (slowerCount > 0) {
+      parts.push(
+        `${slowerCount} ≥${DURATION_JUMP_RATIO}x slower on one side (likely cache miss)`,
+      );
     }
     parts.push("(sample-based — not exhaustive)");
     return parts.join(" · ");
@@ -670,7 +764,7 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
           pagination={{ pageSize: 50, hideOnSinglePage: true }}
           rowClassName={(row) => {
             if (!row.onLeft || !row.onRight) return "";
-            if (row.leftOutcome !== row.rightOutcome)
+            if (row.leftOutcome !== row.rightOutcome || row.slowerSide)
               return "action-compare-row-diff";
             return "action-compare-row-same";
           }}

@@ -4,7 +4,9 @@ import {
   actionDurationMs,
   actionOutcome,
   buildJoinedRows,
+  buildMissReasonRows,
   joinKey,
+  slowerSide,
 } from "./actionComparison";
 
 function action(
@@ -155,5 +157,65 @@ describe("buildJoinedRows", () => {
     expect(matched).toHaveLength(1);
     expect(leftOnly).toHaveLength(1);
     expect(rightOnly).toHaveLength(1);
+  });
+});
+
+describe("slowerSide", () => {
+  test("flags the side that is 10x slower and over a second", () => {
+    expect(slowerSide(100, 5000)).toBe("right");
+    expect(slowerSide(20000, 1500)).toBe("left");
+    expect(slowerSide(0, 1000)).toBe("right");
+  });
+
+  test("ignores small or sub-second differences", () => {
+    expect(slowerSide(1000, 5000)).toBeNull();
+    expect(slowerSide(10, 900)).toBeNull();
+    expect(slowerSide(null, 5000)).toBeNull();
+  });
+
+  test("duration-jump rows sort after outcome changes, before other matches", () => {
+    const at = (ms: number) => ({
+      startTime: "2026-01-01T00:00:00Z",
+      endTime: new Date(Date.parse("2026-01-01T00:00:00Z") + ms).toISOString(),
+    });
+    const rows = buildJoinedRows(
+      [
+        action("//a:same", at(100)),
+        action("//b:slow", at(100)),
+        action("//c:fail", at(100)),
+      ],
+      [
+        action("//a:same", at(100)),
+        action("//b:slow", at(30000)),
+        action("//c:fail", { ...at(100), success: false, exitCode: 1 }),
+      ],
+    );
+    expect(rows.map((r) => r.label)).toEqual([
+      "//c:fail",
+      "//b:slow",
+      "//a:same",
+    ]);
+    expect(rows[1].slowerSide).toBe("right");
+  });
+});
+
+describe("buildMissReasonRows", () => {
+  test("joins by reason and sorts by largest change", () => {
+    const rows = buildMissReasonRows(
+      [
+        { reason: "DIFFERENT_DEPS", count: 5 },
+        { reason: "NOT_CACHED", count: 10 },
+      ],
+      [
+        { reason: "DIFFERENT_DEPS", count: 6 },
+        { reason: "DIFFERENT_ENVIRONMENT", count: 40 },
+        { reason: "UNCONDITIONAL_EXECUTION", count: 0 },
+      ],
+    );
+    expect(rows).toEqual([
+      { reason: "DIFFERENT_ENVIRONMENT", left: 0, right: 40 },
+      { reason: "NOT_CACHED", left: 10, right: 0 },
+      { reason: "DIFFERENT_DEPS", left: 5, right: 6 },
+    ]);
   });
 });
