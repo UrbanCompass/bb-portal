@@ -3,7 +3,10 @@ export interface ActionForJoin {
   label: string;
   type?: string | null;
   primaryOutput?: string | null;
-  cacheStatus?: string | null;
+  success?: boolean | null;
+  exitCode?: number | null;
+  startTime?: string | null;
+  endTime?: string | null;
 }
 
 export interface JoinedActionRow {
@@ -11,14 +14,30 @@ export interface JoinedActionRow {
   label: string;
   mnemonic: string | null | undefined;
   primaryOutput: string | null | undefined;
-  leftStatus: string | null | undefined;
-  rightStatus: string | null | undefined;
+  leftOutcome: string | null;
+  rightOutcome: string | null;
+  leftDurationMs: number | null;
+  rightDurationMs: number | null;
   onLeft: boolean;
   onRight: boolean;
 }
 
 export function joinKey(a: ActionForJoin): string {
   return `${a.label}||${a.type ?? ""}||${a.primaryOutput ?? ""}`;
+}
+
+// actionOutcome summarizes how an action finished: "success", or the exit
+// code for failed actions.
+export function actionOutcome(a: ActionForJoin | undefined): string | null {
+  if (!a) return null;
+  if (a.success) return "success";
+  return `exit ${a.exitCode ?? "?"}`;
+}
+
+export function actionDurationMs(a: ActionForJoin | undefined): number | null {
+  if (!a?.startTime || !a.endTime) return null;
+  const ms = Date.parse(a.endTime) - Date.parse(a.startTime);
+  return Number.isNaN(ms) || ms < 0 ? null : ms;
 }
 
 export function buildJoinedRows(
@@ -43,17 +62,19 @@ export function buildJoinedRows(
       label: ref.label,
       mnemonic: ref.type,
       primaryOutput: ref.primaryOutput,
-      leftStatus: l?.cacheStatus ?? null,
-      rightStatus: r?.cacheStatus ?? null,
+      leftOutcome: actionOutcome(l),
+      rightOutcome: actionOutcome(r),
+      leftDurationMs: actionDurationMs(l),
+      rightDurationMs: actionDurationMs(r),
       onLeft: !!l,
       onRight: !!r,
     });
   }
 
-  // Differing-status matched rows first, then same-status matched, then one-sided
+  // Differing-outcome matched rows first, then same-outcome matched, then one-sided
   rows.sort((a, b) => {
-    const aDiff = a.onLeft && a.onRight && a.leftStatus !== a.rightStatus;
-    const bDiff = b.onLeft && b.onRight && b.leftStatus !== b.rightStatus;
+    const aDiff = a.onLeft && a.onRight && a.leftOutcome !== a.rightOutcome;
+    const bDiff = b.onLeft && b.onRight && b.leftOutcome !== b.rightOutcome;
     if (aDiff && !bDiff) return -1;
     if (!aDiff && bDiff) return 1;
     const aBoth = a.onLeft && a.onRight;

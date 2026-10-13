@@ -24,6 +24,7 @@ import type { ColumnsType } from "antd/es/table";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { validate as uuidValidate } from "uuid";
+import z from "zod";
 import { apolloClient } from "@/components/ApolloWrapper";
 import { ExecutionRatioDonut } from "@/components/ExecutionRatioDonut";
 import { InvocationResultTag } from "@/components/InvocationResultTag";
@@ -34,11 +35,10 @@ import type {
   InvocationCompareDataFragment,
   RunnerCount,
 } from "@/graphql/__generated__/graphql";
-import { buildJoinedRows } from "@/utils/actionComparison";
 import type { JoinedActionRow } from "@/utils/actionComparison";
+import { buildJoinedRows } from "@/utils/actionComparison";
 import { generatePageTitle } from "@/utils/generatePageTitle";
 import { readableDurationFromMilliseconds } from "@/utils/time";
-import z from "zod";
 
 const GET_INVOCATION_FOR_COMPARE = gql(/* GraphQL */ `
   query GetInvocationForCompare($invocationID: UUID!) {
@@ -54,7 +54,10 @@ const ACTION_COMPARE_FRAGMENT = gql(/* GraphQL */ `
     label
     type
     primaryOutput
-    cacheStatus
+    success
+    exitCode
+    startTime
+    endTime
     sampled
   }
 `);
@@ -285,14 +288,24 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
 }) => {
   if (!invocationID) {
     return (
-      <PortalCard type="inner" icon={<InfoCircleOutlined />} titleBits={[label]}>
-        <Typography.Text type="secondary">No invocation selected</Typography.Text>
+      <PortalCard
+        type="inner"
+        icon={<InfoCircleOutlined />}
+        titleBits={[label]}
+      >
+        <Typography.Text type="secondary">
+          No invocation selected
+        </Typography.Text>
       </PortalCard>
     );
   }
   if (!invocation) {
     return (
-      <PortalCard type="inner" icon={<InfoCircleOutlined />} titleBits={[label]}>
+      <PortalCard
+        type="inner"
+        icon={<InfoCircleOutlined />}
+        titleBits={[label]}
+      >
         <Alert
           type="error"
           message={`Invocation "${invocationID}" not found`}
@@ -310,13 +323,15 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
 
   const compareCacheHitPct = compareWith
     ? runnerPercent(
-        (compareWith.metrics?.actionSummary?.runnerCount ?? []) as RunnerCount[],
+        (compareWith.metrics?.actionSummary?.runnerCount ??
+          []) as RunnerCount[],
         "remote cache hit",
       )
     : undefined;
   const compareLocalPct = compareWith
     ? runnerPercent(
-        (compareWith.metrics?.actionSummary?.runnerCount ?? []) as RunnerCount[],
+        (compareWith.metrics?.actionSummary?.runnerCount ??
+          []) as RunnerCount[],
         "local",
       )
     : undefined;
@@ -334,7 +349,10 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
             to="/bazel-invocations/$invocationID"
             params={{ invocationID: invocation.invocationID }}
           >
-            <Typography.Text code style={{ fontSize: 12, verticalAlign: "middle" }}>
+            <Typography.Text
+              code
+              style={{ fontSize: 12, verticalAlign: "middle" }}
+            >
               {invocation.invocationID}
             </Typography.Text>
           </Link>
@@ -474,27 +492,28 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
 
 // ─── Action Comparison Panel ────────────────────────────────────────────────
 
-
-function CacheStatusCell({
-  status,
+function ActionResultCell({
+  outcome,
+  durationMs,
   present,
 }: {
-  status: string | null | undefined;
+  outcome: string | null;
+  durationMs: number | null;
   present: boolean;
 }) {
   if (!present) {
     return <Badge status="default" text="not sampled" />;
   }
-  if (!status) {
-    return <Typography.Text type="secondary">—</Typography.Text>;
-  }
-  const color =
-    status === "remote cache hit"
-      ? "blue"
-      : status === "remote"
-        ? "green"
-        : "orange";
-  return <Tag color={color}>{status}</Tag>;
+  return (
+    <Space size={4}>
+      <Tag color={outcome === "success" ? "green" : "red"}>{outcome}</Tag>
+      {durationMs !== null && (
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          {readableDurationFromMilliseconds(durationMs, { smallestUnit: "ms" })}
+        </Typography.Text>
+      )}
+    </Space>
+  );
 }
 
 interface ActionComparisonPanelProps {
@@ -557,7 +576,11 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
       dataIndex: "mnemonic",
       width: 120,
       render: (v: string | null) =>
-        v ? <Tag>{v}</Tag> : <Typography.Text type="secondary">—</Typography.Text>,
+        v ? (
+          <Tag>{v}</Tag>
+        ) : (
+          <Typography.Text type="secondary">—</Typography.Text>
+        ),
     },
     {
       title: "Primary output",
@@ -573,23 +596,33 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
         ),
     },
     {
-      title: "Left cache status",
+      title: "Left result",
       width: 160,
       render: (_: unknown, row: JoinedActionRow) => (
-        <CacheStatusCell status={row.leftStatus} present={row.onLeft} />
+        <ActionResultCell
+          outcome={row.leftOutcome}
+          durationMs={row.leftDurationMs}
+          present={row.onLeft}
+        />
       ),
     },
     {
-      title: "Right cache status",
+      title: "Right result",
       width: 160,
       render: (_: unknown, row: JoinedActionRow) => (
-        <CacheStatusCell status={row.rightStatus} present={row.onRight} />
+        <ActionResultCell
+          outcome={row.rightOutcome}
+          durationMs={row.rightDurationMs}
+          present={row.onRight}
+        />
       ),
     },
   ];
 
   const coverageText = (() => {
-    const parts: string[] = [`${matchedCount} action${matchedCount !== 1 ? "s" : ""} matched`];
+    const parts: string[] = [
+      `${matchedCount} action${matchedCount !== 1 ? "s" : ""} matched`,
+    ];
     if (leftTotal !== undefined || rightTotal !== undefined) {
       const denom = [
         leftTotal !== undefined ? `~${leftTotal} left` : null,
@@ -626,7 +659,7 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
         <Alert
           type="info"
           message="No sampled actions found"
-          description="Neither invocation had actions persisted in the sample. Failed actions are always recorded; successful actions are a random sample (up to 100 per invocation)."
+          description="Neither invocation had actions persisted in the sample. Failed actions are always recorded; successful actions are sampled (up to 100 per invocation by default)."
           showIcon
         />
       ) : (
@@ -637,7 +670,7 @@ const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
           pagination={{ pageSize: 50, hideOnSinglePage: true }}
           rowClassName={(row) => {
             if (!row.onLeft || !row.onRight) return "";
-            if (row.leftStatus !== row.rightStatus)
+            if (row.leftOutcome !== row.rightOutcome)
               return "action-compare-row-diff";
             return "action-compare-row-same";
           }}
