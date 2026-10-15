@@ -2,7 +2,8 @@
   "getBazelInvocation": {
     "actions": [
       {
-        "id": "QWN0aW9uOjE="
+        "id": "QWN0aW9uOjE=",
+        "success": false
       }
     ],
     "authenticatedUser": null,

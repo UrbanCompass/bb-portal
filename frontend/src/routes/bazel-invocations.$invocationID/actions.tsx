@@ -66,10 +66,12 @@ export const Route = createFileRoute(
       return { actions: undefined };
     }
 
+    // Successful actions are stored as a sample, but this tab only lists
+    // failed actions.
     const actions = getFragmentData(
       BAZEL_INVOCATION_ACTIONS_FRAGMENT,
       data.getBazelInvocation?.actions,
-    );
+    ).filter((action) => action.success === false);
 
     return { actions };
   },

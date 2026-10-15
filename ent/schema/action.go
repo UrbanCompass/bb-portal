@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -11,6 +12,14 @@ import (
 // Action holds the schema definition for the Action entity.
 type Action struct {
 	ent.Schema
+}
+
+// Annotations of the Action.
+func (Action) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField("findActions"),
+	}
 }
 
 // Fields of the Action.
@@ -45,6 +54,17 @@ func (Action) Fields() []ent.Field {
 
 		field.String("failure_code").Optional(),
 		field.String("failure_message").Optional(),
+
+		field.String("primary_output").
+			Comment("The primary output of the action, used to match the same action across invocations").
+			Optional(),
+		field.Bool("sampled").
+			Comment("True if this is a successful action kept by sampling. Failed actions are always stored").
+			Optional(),
+		field.Int64("sample_key").
+			Comment("Sampling key. The successful actions with the lowest keys are kept").
+			Optional().
+			Annotations(entgql.Skip()),
 
 		field.Int64("stdout_file_id").
 			Optional().
@@ -92,7 +112,9 @@ func (Action) Edges() []ent.Edge {
 func (Action) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("label"),
-		index.Edges("bazel_invocation"),
+		index.Fields("primary_output"),
+		// Also serves as the index for the bazel_invocation edge.
+		index.Fields("bazel_invocation_id", "sampled", "sample_key"),
 		index.Edges("configuration"),
 		index.Edges("stdout"),
 		index.Edges("stderr"),

@@ -100,6 +100,21 @@ func FailureMessage(v string) predicate.Action {
 	return predicate.Action(sql.FieldEQ(FieldFailureMessage, v))
 }
 
+// PrimaryOutput applies equality check predicate on the "primary_output" field. It's identical to PrimaryOutputEQ.
+func PrimaryOutput(v string) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldPrimaryOutput, v))
+}
+
+// Sampled applies equality check predicate on the "sampled" field. It's identical to SampledEQ.
+func Sampled(v bool) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldSampled, v))
+}
+
+// SampleKey applies equality check predicate on the "sample_key" field. It's identical to SampleKeyEQ.
+func SampleKey(v int64) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldSampleKey, v))
+}
+
 // StdoutFileID applies equality check predicate on the "stdout_file_id" field. It's identical to StdoutFileIDEQ.
 func StdoutFileID(v int64) predicate.Action {
 	return predicate.Action(sql.FieldEQ(FieldStdoutFileID, v))
@@ -618,6 +633,151 @@ func FailureMessageEqualFold(v string) predicate.Action {
 // FailureMessageContainsFold applies the ContainsFold predicate on the "failure_message" field.
 func FailureMessageContainsFold(v string) predicate.Action {
 	return predicate.Action(sql.FieldContainsFold(FieldFailureMessage, v))
+}
+
+// PrimaryOutputEQ applies the EQ predicate on the "primary_output" field.
+func PrimaryOutputEQ(v string) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputNEQ applies the NEQ predicate on the "primary_output" field.
+func PrimaryOutputNEQ(v string) predicate.Action {
+	return predicate.Action(sql.FieldNEQ(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputIn applies the In predicate on the "primary_output" field.
+func PrimaryOutputIn(vs ...string) predicate.Action {
+	return predicate.Action(sql.FieldIn(FieldPrimaryOutput, vs...))
+}
+
+// PrimaryOutputNotIn applies the NotIn predicate on the "primary_output" field.
+func PrimaryOutputNotIn(vs ...string) predicate.Action {
+	return predicate.Action(sql.FieldNotIn(FieldPrimaryOutput, vs...))
+}
+
+// PrimaryOutputGT applies the GT predicate on the "primary_output" field.
+func PrimaryOutputGT(v string) predicate.Action {
+	return predicate.Action(sql.FieldGT(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputGTE applies the GTE predicate on the "primary_output" field.
+func PrimaryOutputGTE(v string) predicate.Action {
+	return predicate.Action(sql.FieldGTE(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputLT applies the LT predicate on the "primary_output" field.
+func PrimaryOutputLT(v string) predicate.Action {
+	return predicate.Action(sql.FieldLT(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputLTE applies the LTE predicate on the "primary_output" field.
+func PrimaryOutputLTE(v string) predicate.Action {
+	return predicate.Action(sql.FieldLTE(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputContains applies the Contains predicate on the "primary_output" field.
+func PrimaryOutputContains(v string) predicate.Action {
+	return predicate.Action(sql.FieldContains(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputHasPrefix applies the HasPrefix predicate on the "primary_output" field.
+func PrimaryOutputHasPrefix(v string) predicate.Action {
+	return predicate.Action(sql.FieldHasPrefix(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputHasSuffix applies the HasSuffix predicate on the "primary_output" field.
+func PrimaryOutputHasSuffix(v string) predicate.Action {
+	return predicate.Action(sql.FieldHasSuffix(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputIsNil applies the IsNil predicate on the "primary_output" field.
+func PrimaryOutputIsNil() predicate.Action {
+	return predicate.Action(sql.FieldIsNull(FieldPrimaryOutput))
+}
+
+// PrimaryOutputNotNil applies the NotNil predicate on the "primary_output" field.
+func PrimaryOutputNotNil() predicate.Action {
+	return predicate.Action(sql.FieldNotNull(FieldPrimaryOutput))
+}
+
+// PrimaryOutputEqualFold applies the EqualFold predicate on the "primary_output" field.
+func PrimaryOutputEqualFold(v string) predicate.Action {
+	return predicate.Action(sql.FieldEqualFold(FieldPrimaryOutput, v))
+}
+
+// PrimaryOutputContainsFold applies the ContainsFold predicate on the "primary_output" field.
+func PrimaryOutputContainsFold(v string) predicate.Action {
+	return predicate.Action(sql.FieldContainsFold(FieldPrimaryOutput, v))
+}
+
+// SampledEQ applies the EQ predicate on the "sampled" field.
+func SampledEQ(v bool) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldSampled, v))
+}
+
+// SampledNEQ applies the NEQ predicate on the "sampled" field.
+func SampledNEQ(v bool) predicate.Action {
+	return predicate.Action(sql.FieldNEQ(FieldSampled, v))
+}
+
+// SampledIsNil applies the IsNil predicate on the "sampled" field.
+func SampledIsNil() predicate.Action {
+	return predicate.Action(sql.FieldIsNull(FieldSampled))
+}
+
+// SampledNotNil applies the NotNil predicate on the "sampled" field.
+func SampledNotNil() predicate.Action {
+	return predicate.Action(sql.FieldNotNull(FieldSampled))
+}
+
+// SampleKeyEQ applies the EQ predicate on the "sample_key" field.
+func SampleKeyEQ(v int64) predicate.Action {
+	return predicate.Action(sql.FieldEQ(FieldSampleKey, v))
+}
+
+// SampleKeyNEQ applies the NEQ predicate on the "sample_key" field.
+func SampleKeyNEQ(v int64) predicate.Action {
+	return predicate.Action(sql.FieldNEQ(FieldSampleKey, v))
+}
+
+// SampleKeyIn applies the In predicate on the "sample_key" field.
+func SampleKeyIn(vs ...int64) predicate.Action {
+	return predicate.Action(sql.FieldIn(FieldSampleKey, vs...))
+}
+
+// SampleKeyNotIn applies the NotIn predicate on the "sample_key" field.
+func SampleKeyNotIn(vs ...int64) predicate.Action {
+	return predicate.Action(sql.FieldNotIn(FieldSampleKey, vs...))
+}
+
+// SampleKeyGT applies the GT predicate on the "sample_key" field.
+func SampleKeyGT(v int64) predicate.Action {
+	return predicate.Action(sql.FieldGT(FieldSampleKey, v))
+}
+
+// SampleKeyGTE applies the GTE predicate on the "sample_key" field.
+func SampleKeyGTE(v int64) predicate.Action {
+	return predicate.Action(sql.FieldGTE(FieldSampleKey, v))
+}
+
+// SampleKeyLT applies the LT predicate on the "sample_key" field.
+func SampleKeyLT(v int64) predicate.Action {
+	return predicate.Action(sql.FieldLT(FieldSampleKey, v))
+}
+
+// SampleKeyLTE applies the LTE predicate on the "sample_key" field.
+func SampleKeyLTE(v int64) predicate.Action {
+	return predicate.Action(sql.FieldLTE(FieldSampleKey, v))
+}
+
+// SampleKeyIsNil applies the IsNil predicate on the "sample_key" field.
+func SampleKeyIsNil() predicate.Action {
+	return predicate.Action(sql.FieldIsNull(FieldSampleKey))
+}
+
+// SampleKeyNotNil applies the NotNil predicate on the "sample_key" field.
+func SampleKeyNotNil() predicate.Action {
+	return predicate.Action(sql.FieldNotNull(FieldSampleKey))
 }
 
 // StdoutFileIDEQ applies the EQ predicate on the "stdout_file_id" field.

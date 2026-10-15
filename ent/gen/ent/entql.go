@@ -86,6 +86,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			action.FieldEndTime:           {Type: field.TypeTime, Column: action.FieldEndTime},
 			action.FieldFailureCode:       {Type: field.TypeString, Column: action.FieldFailureCode},
 			action.FieldFailureMessage:    {Type: field.TypeString, Column: action.FieldFailureMessage},
+			action.FieldPrimaryOutput:     {Type: field.TypeString, Column: action.FieldPrimaryOutput},
+			action.FieldSampled:           {Type: field.TypeBool, Column: action.FieldSampled},
+			action.FieldSampleKey:         {Type: field.TypeInt64, Column: action.FieldSampleKey},
 			action.FieldStdoutFileID:      {Type: field.TypeInt64, Column: action.FieldStdoutFileID},
 			action.FieldStderrFileID:      {Type: field.TypeInt64, Column: action.FieldStderrFileID},
 		},
@@ -2454,6 +2457,21 @@ func (f *ActionFilter) WhereFailureCode(p entql.StringP) {
 // WhereFailureMessage applies the entql string predicate on the failure_message field.
 func (f *ActionFilter) WhereFailureMessage(p entql.StringP) {
 	f.Where(p.Field(action.FieldFailureMessage))
+}
+
+// WherePrimaryOutput applies the entql string predicate on the primary_output field.
+func (f *ActionFilter) WherePrimaryOutput(p entql.StringP) {
+	f.Where(p.Field(action.FieldPrimaryOutput))
+}
+
+// WhereSampled applies the entql bool predicate on the sampled field.
+func (f *ActionFilter) WhereSampled(p entql.BoolP) {
+	f.Where(p.Field(action.FieldSampled))
+}
+
+// WhereSampleKey applies the entql int64 predicate on the sample_key field.
+func (f *ActionFilter) WhereSampleKey(p entql.Int64P) {
+	f.Where(p.Field(action.FieldSampleKey))
 }
 
 // WhereStdoutFileID applies the entql int64 predicate on the stdout_file_id field.

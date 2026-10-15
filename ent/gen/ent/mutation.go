@@ -144,6 +144,10 @@ type ActionMutation struct {
 	end_time                *time.Time
 	failure_code            *string
 	failure_message         *string
+	primary_output          *string
+	sampled                 *bool
+	sample_key              *int64
+	addsample_key           *int64
 	clearedFields           map[string]struct{}
 	bazel_invocation        *int64
 	clearedbazel_invocation bool
@@ -799,6 +803,174 @@ func (m *ActionMutation) ResetFailureMessage() {
 	delete(m.clearedFields, action.FieldFailureMessage)
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (m *ActionMutation) SetPrimaryOutput(s string) {
+	m.primary_output = &s
+}
+
+// PrimaryOutput returns the value of the "primary_output" field in the mutation.
+func (m *ActionMutation) PrimaryOutput() (r string, exists bool) {
+	v := m.primary_output
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrimaryOutput returns the old "primary_output" field's value of the Action entity.
+// If the Action object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActionMutation) OldPrimaryOutput(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrimaryOutput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrimaryOutput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrimaryOutput: %w", err)
+	}
+	return oldValue.PrimaryOutput, nil
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (m *ActionMutation) ClearPrimaryOutput() {
+	m.primary_output = nil
+	m.clearedFields[action.FieldPrimaryOutput] = struct{}{}
+}
+
+// PrimaryOutputCleared returns if the "primary_output" field was cleared in this mutation.
+func (m *ActionMutation) PrimaryOutputCleared() bool {
+	_, ok := m.clearedFields[action.FieldPrimaryOutput]
+	return ok
+}
+
+// ResetPrimaryOutput resets all changes to the "primary_output" field.
+func (m *ActionMutation) ResetPrimaryOutput() {
+	m.primary_output = nil
+	delete(m.clearedFields, action.FieldPrimaryOutput)
+}
+
+// SetSampled sets the "sampled" field.
+func (m *ActionMutation) SetSampled(b bool) {
+	m.sampled = &b
+}
+
+// Sampled returns the value of the "sampled" field in the mutation.
+func (m *ActionMutation) Sampled() (r bool, exists bool) {
+	v := m.sampled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSampled returns the old "sampled" field's value of the Action entity.
+// If the Action object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActionMutation) OldSampled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSampled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSampled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSampled: %w", err)
+	}
+	return oldValue.Sampled, nil
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (m *ActionMutation) ClearSampled() {
+	m.sampled = nil
+	m.clearedFields[action.FieldSampled] = struct{}{}
+}
+
+// SampledCleared returns if the "sampled" field was cleared in this mutation.
+func (m *ActionMutation) SampledCleared() bool {
+	_, ok := m.clearedFields[action.FieldSampled]
+	return ok
+}
+
+// ResetSampled resets all changes to the "sampled" field.
+func (m *ActionMutation) ResetSampled() {
+	m.sampled = nil
+	delete(m.clearedFields, action.FieldSampled)
+}
+
+// SetSampleKey sets the "sample_key" field.
+func (m *ActionMutation) SetSampleKey(i int64) {
+	m.sample_key = &i
+	m.addsample_key = nil
+}
+
+// SampleKey returns the value of the "sample_key" field in the mutation.
+func (m *ActionMutation) SampleKey() (r int64, exists bool) {
+	v := m.sample_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSampleKey returns the old "sample_key" field's value of the Action entity.
+// If the Action object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActionMutation) OldSampleKey(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSampleKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSampleKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSampleKey: %w", err)
+	}
+	return oldValue.SampleKey, nil
+}
+
+// AddSampleKey adds i to the "sample_key" field.
+func (m *ActionMutation) AddSampleKey(i int64) {
+	if m.addsample_key != nil {
+		*m.addsample_key += i
+	} else {
+		m.addsample_key = &i
+	}
+}
+
+// AddedSampleKey returns the value that was added to the "sample_key" field in this mutation.
+func (m *ActionMutation) AddedSampleKey() (r int64, exists bool) {
+	v := m.addsample_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSampleKey clears the value of the "sample_key" field.
+func (m *ActionMutation) ClearSampleKey() {
+	m.sample_key = nil
+	m.addsample_key = nil
+	m.clearedFields[action.FieldSampleKey] = struct{}{}
+}
+
+// SampleKeyCleared returns if the "sample_key" field was cleared in this mutation.
+func (m *ActionMutation) SampleKeyCleared() bool {
+	_, ok := m.clearedFields[action.FieldSampleKey]
+	return ok
+}
+
+// ResetSampleKey resets all changes to the "sample_key" field.
+func (m *ActionMutation) ResetSampleKey() {
+	m.sample_key = nil
+	m.addsample_key = nil
+	delete(m.clearedFields, action.FieldSampleKey)
+}
+
 // SetStdoutFileID sets the "stdout_file_id" field.
 func (m *ActionMutation) SetStdoutFileID(i int64) {
 	m.stdout = &i
@@ -1065,7 +1237,7 @@ func (m *ActionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ActionMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 16)
 	if m.bazel_invocation != nil {
 		fields = append(fields, action.FieldBazelInvocationID)
 	}
@@ -1098,6 +1270,15 @@ func (m *ActionMutation) Fields() []string {
 	}
 	if m.failure_message != nil {
 		fields = append(fields, action.FieldFailureMessage)
+	}
+	if m.primary_output != nil {
+		fields = append(fields, action.FieldPrimaryOutput)
+	}
+	if m.sampled != nil {
+		fields = append(fields, action.FieldSampled)
+	}
+	if m.sample_key != nil {
+		fields = append(fields, action.FieldSampleKey)
 	}
 	if m.stdout != nil {
 		fields = append(fields, action.FieldStdoutFileID)
@@ -1135,6 +1316,12 @@ func (m *ActionMutation) Field(name string) (ent.Value, bool) {
 		return m.FailureCode()
 	case action.FieldFailureMessage:
 		return m.FailureMessage()
+	case action.FieldPrimaryOutput:
+		return m.PrimaryOutput()
+	case action.FieldSampled:
+		return m.Sampled()
+	case action.FieldSampleKey:
+		return m.SampleKey()
 	case action.FieldStdoutFileID:
 		return m.StdoutFileID()
 	case action.FieldStderrFileID:
@@ -1170,6 +1357,12 @@ func (m *ActionMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldFailureCode(ctx)
 	case action.FieldFailureMessage:
 		return m.OldFailureMessage(ctx)
+	case action.FieldPrimaryOutput:
+		return m.OldPrimaryOutput(ctx)
+	case action.FieldSampled:
+		return m.OldSampled(ctx)
+	case action.FieldSampleKey:
+		return m.OldSampleKey(ctx)
 	case action.FieldStdoutFileID:
 		return m.OldStdoutFileID(ctx)
 	case action.FieldStderrFileID:
@@ -1260,6 +1453,27 @@ func (m *ActionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFailureMessage(v)
 		return nil
+	case action.FieldPrimaryOutput:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrimaryOutput(v)
+		return nil
+	case action.FieldSampled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSampled(v)
+		return nil
+	case action.FieldSampleKey:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSampleKey(v)
+		return nil
 	case action.FieldStdoutFileID:
 		v, ok := value.(int64)
 		if !ok {
@@ -1285,6 +1499,9 @@ func (m *ActionMutation) AddedFields() []string {
 	if m.addexit_code != nil {
 		fields = append(fields, action.FieldExitCode)
 	}
+	if m.addsample_key != nil {
+		fields = append(fields, action.FieldSampleKey)
+	}
 	return fields
 }
 
@@ -1295,6 +1512,8 @@ func (m *ActionMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case action.FieldExitCode:
 		return m.AddedExitCode()
+	case action.FieldSampleKey:
+		return m.AddedSampleKey()
 	}
 	return nil, false
 }
@@ -1310,6 +1529,13 @@ func (m *ActionMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddExitCode(v)
+		return nil
+	case action.FieldSampleKey:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSampleKey(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Action numeric field %s", name)
@@ -1342,6 +1568,15 @@ func (m *ActionMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(action.FieldFailureMessage) {
 		fields = append(fields, action.FieldFailureMessage)
+	}
+	if m.FieldCleared(action.FieldPrimaryOutput) {
+		fields = append(fields, action.FieldPrimaryOutput)
+	}
+	if m.FieldCleared(action.FieldSampled) {
+		fields = append(fields, action.FieldSampled)
+	}
+	if m.FieldCleared(action.FieldSampleKey) {
+		fields = append(fields, action.FieldSampleKey)
 	}
 	if m.FieldCleared(action.FieldStdoutFileID) {
 		fields = append(fields, action.FieldStdoutFileID)
@@ -1386,6 +1621,15 @@ func (m *ActionMutation) ClearField(name string) error {
 		return nil
 	case action.FieldFailureMessage:
 		m.ClearFailureMessage()
+		return nil
+	case action.FieldPrimaryOutput:
+		m.ClearPrimaryOutput()
+		return nil
+	case action.FieldSampled:
+		m.ClearSampled()
+		return nil
+	case action.FieldSampleKey:
+		m.ClearSampleKey()
 		return nil
 	case action.FieldStdoutFileID:
 		m.ClearStdoutFileID()
@@ -1433,6 +1677,15 @@ func (m *ActionMutation) ResetField(name string) error {
 		return nil
 	case action.FieldFailureMessage:
 		m.ResetFailureMessage()
+		return nil
+	case action.FieldPrimaryOutput:
+		m.ResetPrimaryOutput()
+		return nil
+	case action.FieldSampled:
+		m.ResetSampled()
+		return nil
+	case action.FieldSampleKey:
+		m.ResetSampleKey()
 		return nil
 	case action.FieldStdoutFileID:
 		m.ResetStdoutFileID()

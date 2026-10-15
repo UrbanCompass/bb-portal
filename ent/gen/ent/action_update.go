@@ -208,6 +208,73 @@ func (_u *ActionUpdate) ClearFailureMessage() *ActionUpdate {
 	return _u
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (_u *ActionUpdate) SetPrimaryOutput(v string) *ActionUpdate {
+	_u.mutation.SetPrimaryOutput(v)
+	return _u
+}
+
+// SetNillablePrimaryOutput sets the "primary_output" field if the given value is not nil.
+func (_u *ActionUpdate) SetNillablePrimaryOutput(v *string) *ActionUpdate {
+	if v != nil {
+		_u.SetPrimaryOutput(*v)
+	}
+	return _u
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (_u *ActionUpdate) ClearPrimaryOutput() *ActionUpdate {
+	_u.mutation.ClearPrimaryOutput()
+	return _u
+}
+
+// SetSampled sets the "sampled" field.
+func (_u *ActionUpdate) SetSampled(v bool) *ActionUpdate {
+	_u.mutation.SetSampled(v)
+	return _u
+}
+
+// SetNillableSampled sets the "sampled" field if the given value is not nil.
+func (_u *ActionUpdate) SetNillableSampled(v *bool) *ActionUpdate {
+	if v != nil {
+		_u.SetSampled(*v)
+	}
+	return _u
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (_u *ActionUpdate) ClearSampled() *ActionUpdate {
+	_u.mutation.ClearSampled()
+	return _u
+}
+
+// SetSampleKey sets the "sample_key" field.
+func (_u *ActionUpdate) SetSampleKey(v int64) *ActionUpdate {
+	_u.mutation.ResetSampleKey()
+	_u.mutation.SetSampleKey(v)
+	return _u
+}
+
+// SetNillableSampleKey sets the "sample_key" field if the given value is not nil.
+func (_u *ActionUpdate) SetNillableSampleKey(v *int64) *ActionUpdate {
+	if v != nil {
+		_u.SetSampleKey(*v)
+	}
+	return _u
+}
+
+// AddSampleKey adds value to the "sample_key" field.
+func (_u *ActionUpdate) AddSampleKey(v int64) *ActionUpdate {
+	_u.mutation.AddSampleKey(v)
+	return _u
+}
+
+// ClearSampleKey clears the value of the "sample_key" field.
+func (_u *ActionUpdate) ClearSampleKey() *ActionUpdate {
+	_u.mutation.ClearSampleKey()
+	return _u
+}
+
 // Mutation returns the ActionMutation object of the builder.
 func (_u *ActionUpdate) Mutation() *ActionMutation {
 	return _u.mutation
@@ -321,6 +388,27 @@ func (_u *ActionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.FailureMessageCleared() {
 		_spec.ClearField(action.FieldFailureMessage, field.TypeString)
+	}
+	if value, ok := _u.mutation.PrimaryOutput(); ok {
+		_spec.SetField(action.FieldPrimaryOutput, field.TypeString, value)
+	}
+	if _u.mutation.PrimaryOutputCleared() {
+		_spec.ClearField(action.FieldPrimaryOutput, field.TypeString)
+	}
+	if value, ok := _u.mutation.Sampled(); ok {
+		_spec.SetField(action.FieldSampled, field.TypeBool, value)
+	}
+	if _u.mutation.SampledCleared() {
+		_spec.ClearField(action.FieldSampled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.SampleKey(); ok {
+		_spec.SetField(action.FieldSampleKey, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedSampleKey(); ok {
+		_spec.AddField(action.FieldSampleKey, field.TypeInt64, value)
+	}
+	if _u.mutation.SampleKeyCleared() {
+		_spec.ClearField(action.FieldSampleKey, field.TypeInt64)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -521,6 +609,73 @@ func (_u *ActionUpdateOne) ClearFailureMessage() *ActionUpdateOne {
 	return _u
 }
 
+// SetPrimaryOutput sets the "primary_output" field.
+func (_u *ActionUpdateOne) SetPrimaryOutput(v string) *ActionUpdateOne {
+	_u.mutation.SetPrimaryOutput(v)
+	return _u
+}
+
+// SetNillablePrimaryOutput sets the "primary_output" field if the given value is not nil.
+func (_u *ActionUpdateOne) SetNillablePrimaryOutput(v *string) *ActionUpdateOne {
+	if v != nil {
+		_u.SetPrimaryOutput(*v)
+	}
+	return _u
+}
+
+// ClearPrimaryOutput clears the value of the "primary_output" field.
+func (_u *ActionUpdateOne) ClearPrimaryOutput() *ActionUpdateOne {
+	_u.mutation.ClearPrimaryOutput()
+	return _u
+}
+
+// SetSampled sets the "sampled" field.
+func (_u *ActionUpdateOne) SetSampled(v bool) *ActionUpdateOne {
+	_u.mutation.SetSampled(v)
+	return _u
+}
+
+// SetNillableSampled sets the "sampled" field if the given value is not nil.
+func (_u *ActionUpdateOne) SetNillableSampled(v *bool) *ActionUpdateOne {
+	if v != nil {
+		_u.SetSampled(*v)
+	}
+	return _u
+}
+
+// ClearSampled clears the value of the "sampled" field.
+func (_u *ActionUpdateOne) ClearSampled() *ActionUpdateOne {
+	_u.mutation.ClearSampled()
+	return _u
+}
+
+// SetSampleKey sets the "sample_key" field.
+func (_u *ActionUpdateOne) SetSampleKey(v int64) *ActionUpdateOne {
+	_u.mutation.ResetSampleKey()
+	_u.mutation.SetSampleKey(v)
+	return _u
+}
+
+// SetNillableSampleKey sets the "sample_key" field if the given value is not nil.
+func (_u *ActionUpdateOne) SetNillableSampleKey(v *int64) *ActionUpdateOne {
+	if v != nil {
+		_u.SetSampleKey(*v)
+	}
+	return _u
+}
+
+// AddSampleKey adds value to the "sample_key" field.
+func (_u *ActionUpdateOne) AddSampleKey(v int64) *ActionUpdateOne {
+	_u.mutation.AddSampleKey(v)
+	return _u
+}
+
+// ClearSampleKey clears the value of the "sample_key" field.
+func (_u *ActionUpdateOne) ClearSampleKey() *ActionUpdateOne {
+	_u.mutation.ClearSampleKey()
+	return _u
+}
+
 // Mutation returns the ActionMutation object of the builder.
 func (_u *ActionUpdateOne) Mutation() *ActionMutation {
 	return _u.mutation
@@ -664,6 +819,27 @@ func (_u *ActionUpdateOne) sqlSave(ctx context.Context) (_node *Action, err erro
 	}
 	if _u.mutation.FailureMessageCleared() {
 		_spec.ClearField(action.FieldFailureMessage, field.TypeString)
+	}
+	if value, ok := _u.mutation.PrimaryOutput(); ok {
+		_spec.SetField(action.FieldPrimaryOutput, field.TypeString, value)
+	}
+	if _u.mutation.PrimaryOutputCleared() {
+		_spec.ClearField(action.FieldPrimaryOutput, field.TypeString)
+	}
+	if value, ok := _u.mutation.Sampled(); ok {
+		_spec.SetField(action.FieldSampled, field.TypeBool, value)
+	}
+	if _u.mutation.SampledCleared() {
+		_spec.ClearField(action.FieldSampled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.SampleKey(); ok {
+		_spec.SetField(action.FieldSampleKey, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedSampleKey(); ok {
+		_spec.AddField(action.FieldSampleKey, field.TypeInt64, value)
+	}
+	if _u.mutation.SampleKeyCleared() {
+		_spec.ClearField(action.FieldSampleKey, field.TypeInt64)
 	}
 	_node = &Action{config: _u.config}
 	_spec.Assign = _node.assignValues
