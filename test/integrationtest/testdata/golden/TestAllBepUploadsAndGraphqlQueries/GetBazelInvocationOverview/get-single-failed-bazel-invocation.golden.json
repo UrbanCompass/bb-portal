@@ -23,6 +23,27 @@
       "name": ""
     },
     "invocationID": "08ae089d-4c85-405c-83fc-dbe9fc1dc942",
+    "metrics": {
+      "actionSummary": {
+        "runnerCount": [
+          {
+            "actionsExecuted": 3,
+            "id": "UnVubmVyQ291bnQ6NQ==",
+            "name": "total"
+          },
+          {
+            "actionsExecuted": 2,
+            "id": "UnVubmVyQ291bnQ6Ng==",
+            "name": "internal"
+          },
+          {
+            "actionsExecuted": 1,
+            "id": "UnVubmVyQ291bnQ6Nw==",
+            "name": "local"
+          }
+        ]
+      }
+    },
     "numFetches": 0,
     "originalCommandLine": {
       "command": "test",
