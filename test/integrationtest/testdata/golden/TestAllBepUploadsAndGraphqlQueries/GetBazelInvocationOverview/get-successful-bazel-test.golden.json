@@ -23,6 +23,32 @@
       "name": ""
     },
     "invocationID": "10a37e86-6e2b-4adb-83dd-c2906f42bdd6",
+    "metrics": {
+      "actionSummary": {
+        "runnerCount": [
+          {
+            "actionsExecuted": 4,
+            "id": "UnVubmVyQ291bnQ6OA==",
+            "name": "total"
+          },
+          {
+            "actionsExecuted": 1,
+            "id": "UnVubmVyQ291bnQ6OQ==",
+            "name": "internal"
+          },
+          {
+            "actionsExecuted": 2,
+            "id": "UnVubmVyQ291bnQ6MTA=",
+            "name": "darwin-sandbox"
+          },
+          {
+            "actionsExecuted": 1,
+            "id": "UnVubmVyQ291bnQ6MTE=",
+            "name": "local"
+          }
+        ]
+      }
+    },
     "numFetches": 0,
     "originalCommandLine": {
       "command": "test",

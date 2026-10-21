@@ -23,6 +23,22 @@
       "name": ""
     },
     "invocationID": "df7178e2-a815-4654-a409-d18e845d1e35",
+    "metrics": {
+      "actionSummary": {
+        "runnerCount": [
+          {
+            "actionsExecuted": 1,
+            "id": "UnVubmVyQ291bnQ6MTU=",
+            "name": "total"
+          },
+          {
+            "actionsExecuted": 1,
+            "id": "UnVubmVyQ291bnQ6MTY=",
+            "name": "internal"
+          }
+        ]
+      }
+    },
     "numFetches": 0,
     "originalCommandLine": {
       "command": "build",

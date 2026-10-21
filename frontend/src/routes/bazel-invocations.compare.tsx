@@ -1,20 +1,30 @@
-import { InfoCircleOutlined, SwapOutlined } from "@ant-design/icons";
+import {
+  BranchesOutlined,
+  InfoCircleOutlined,
+  SwapOutlined,
+} from "@ant-design/icons";
+import { useQuery } from "@apollo/client/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Alert,
+  Badge,
   Button,
   Col,
   Divider,
   Input,
   Row,
   Space,
+  Spin,
   Statistic,
+  Table,
   Tag,
   Typography,
 } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import type React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { validate as uuidValidate } from "uuid";
+import z from "zod";
 import { apolloClient } from "@/components/ApolloWrapper";
 import { ExecutionRatioDonut } from "@/components/ExecutionRatioDonut";
 import { InvocationResultTag } from "@/components/InvocationResultTag";
@@ -25,14 +35,44 @@ import type {
   InvocationCompareDataFragment,
   RunnerCount,
 } from "@/graphql/__generated__/graphql";
+import type { JoinedActionRow, MissReasonRow } from "@/utils/actionComparison";
+import {
+  buildJoinedRows,
+  buildMissReasonRows,
+  DURATION_JUMP_RATIO,
+} from "@/utils/actionComparison";
 import { generatePageTitle } from "@/utils/generatePageTitle";
 import { readableDurationFromMilliseconds } from "@/utils/time";
-import z from "zod";
 
 const GET_INVOCATION_FOR_COMPARE = gql(/* GraphQL */ `
   query GetInvocationForCompare($invocationID: UUID!) {
     getBazelInvocation(invocationID: $invocationID) {
       ...InvocationCompareData
+    }
+  }
+`);
+
+const ACTION_COMPARE_FRAGMENT = gql(/* GraphQL */ `
+  fragment ActionCompare on Action {
+    id
+    label
+    type
+    primaryOutput
+    success
+    exitCode
+    startTime
+    endTime
+    sampled
+  }
+`);
+
+const GET_ACTIONS_FOR_COMPARE = gql(/* GraphQL */ `
+  query GetActionsForCompare($invocationID: UUID!) {
+    getBazelInvocation(invocationID: $invocationID) {
+      id
+      actions {
+        ...ActionCompare
+      }
     }
   }
 `);
@@ -59,10 +99,20 @@ const INVOCATION_COMPARE_FRAGMENT = gql(/* GraphQL */ `
       }
       actionSummary {
         id
+        actionsExecuted
         runnerCount {
           id
           name
           actionsExecuted
+        }
+        actionCacheStatistics {
+          id
+          misses
+          missDetails {
+            id
+            reason
+            count
+          }
         }
       }
     }
@@ -134,6 +184,11 @@ function RouteComponent() {
     navigate({ search: (prev) => ({ ...prev, right: val }) });
   };
 
+  const leftTotal =
+    leftInv?.metrics?.actionSummary?.actionsExecuted ?? undefined;
+  const rightTotal =
+    rightInv?.metrics?.actionSummary?.actionsExecuted ?? undefined;
+
   return (
     <PortalCard icon={<SwapOutlined />} titleBits={["Invocation Comparison"]}>
       <Row gutter={[24, 24]}>
@@ -191,6 +246,19 @@ function RouteComponent() {
           </Space>
         </Col>
       </Row>
+      {left && right && leftInv && rightInv && (
+        <>
+          <Divider />
+          <MissReasonComparison left={leftInv} right={rightInv} />
+          <Divider />
+          <ActionComparisonPanel
+            leftID={left}
+            rightID={right}
+            leftTotal={leftTotal}
+            rightTotal={rightTotal}
+          />
+        </>
+      )}
     </PortalCard>
   );
 }
@@ -235,14 +303,24 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
 }) => {
   if (!invocationID) {
     return (
-      <PortalCard type="inner" icon={<InfoCircleOutlined />} titleBits={[label]}>
-        <Typography.Text type="secondary">No invocation selected</Typography.Text>
+      <PortalCard
+        type="inner"
+        icon={<InfoCircleOutlined />}
+        titleBits={[label]}
+      >
+        <Typography.Text type="secondary">
+          No invocation selected
+        </Typography.Text>
       </PortalCard>
     );
   }
   if (!invocation) {
     return (
-      <PortalCard type="inner" icon={<InfoCircleOutlined />} titleBits={[label]}>
+      <PortalCard
+        type="inner"
+        icon={<InfoCircleOutlined />}
+        titleBits={[label]}
+      >
         <Alert
           type="error"
           message={`Invocation "${invocationID}" not found`}
@@ -260,13 +338,15 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
 
   const compareCacheHitPct = compareWith
     ? runnerPercent(
-        (compareWith.metrics?.actionSummary?.runnerCount ?? []) as RunnerCount[],
+        (compareWith.metrics?.actionSummary?.runnerCount ??
+          []) as RunnerCount[],
         "remote cache hit",
       )
     : undefined;
   const compareLocalPct = compareWith
     ? runnerPercent(
-        (compareWith.metrics?.actionSummary?.runnerCount ?? []) as RunnerCount[],
+        (compareWith.metrics?.actionSummary?.runnerCount ??
+          []) as RunnerCount[],
         "local",
       )
     : undefined;
@@ -284,7 +364,10 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
             to="/bazel-invocations/$invocationID"
             params={{ invocationID: invocation.invocationID }}
           >
-            <Typography.Text code style={{ fontSize: 12 }}>
+            <Typography.Text
+              code
+              style={{ fontSize: 12, verticalAlign: "middle" }}
+            >
               {invocation.invocationID}
             </Typography.Text>
           </Link>
@@ -419,5 +502,287 @@ const InvocationColumn: React.FC<InvocationColumnProps> = ({
         )}
       </Space>
     </PortalCard>
+  );
+};
+
+// ─── Cache Miss Reasons ─────────────────────────────────────────────────────
+
+const MissReasonComparison: React.FC<{
+  left: InvocationData;
+  right: InvocationData;
+}> = ({ left, right }) => {
+  const leftStats = left.metrics?.actionSummary?.actionCacheStatistics;
+  const rightStats = right.metrics?.actionSummary?.actionCacheStatistics;
+  const rows = buildMissReasonRows(
+    leftStats?.missDetails ?? [],
+    rightStats?.missDetails ?? [],
+  );
+
+  const columns: ColumnsType<MissReasonRow> = [
+    {
+      title: "Reason",
+      dataIndex: "reason",
+      render: (v: string) => <Tag>{v}</Tag>,
+    },
+    { title: "Left", dataIndex: "left", width: 120, align: "right" },
+    { title: "Right", dataIndex: "right", width: 120, align: "right" },
+    {
+      title: "Change",
+      width: 120,
+      align: "right",
+      render: (_: unknown, row: MissReasonRow) => {
+        const d = row.right - row.left;
+        if (d === 0)
+          return <Typography.Text type="secondary">0</Typography.Text>;
+        return (
+          <Typography.Text type={d > 0 ? "danger" : "success"}>
+            {d > 0 ? `+${d}` : d}
+          </Typography.Text>
+        );
+      },
+    },
+  ];
+
+  return (
+    <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+      <Space>
+        <InfoCircleOutlined />
+        <Typography.Text strong>Cache Miss Reasons</Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          Bazel's local action cache · {leftStats?.misses ?? 0} left /{" "}
+          {rightStats?.misses ?? 0} right misses
+        </Typography.Text>
+      </Space>
+      {rows.length === 0 ? (
+        <Typography.Text type="secondary">
+          No action cache misses reported by either invocation.
+        </Typography.Text>
+      ) : (
+        <Table<MissReasonRow>
+          dataSource={rows}
+          columns={columns}
+          rowKey="reason"
+          size="small"
+          pagination={false}
+        />
+      )}
+    </Space>
+  );
+};
+
+// ─── Action Comparison Panel ────────────────────────────────────────────────
+
+function ActionResultCell({
+  outcome,
+  durationMs,
+  present,
+  slower,
+}: {
+  outcome: string | null;
+  durationMs: number | null;
+  present: boolean;
+  slower: boolean;
+}) {
+  if (!present) {
+    return <Badge status="default" text="not sampled" />;
+  }
+  return (
+    <Space size={4}>
+      <Tag color={outcome === "success" ? "green" : "red"}>{outcome}</Tag>
+      {durationMs !== null && (
+        <Typography.Text
+          type={slower ? "warning" : "secondary"}
+          strong={slower}
+          style={{ fontSize: 12 }}
+        >
+          {readableDurationFromMilliseconds(durationMs, { smallestUnit: "ms" })}
+        </Typography.Text>
+      )}
+    </Space>
+  );
+}
+
+interface ActionComparisonPanelProps {
+  leftID: string;
+  rightID: string;
+  leftTotal: number | undefined;
+  rightTotal: number | undefined;
+}
+
+const ActionComparisonPanel: React.FC<ActionComparisonPanelProps> = ({
+  leftID,
+  rightID,
+  leftTotal,
+  rightTotal,
+}) => {
+  const { data: leftData, loading: leftLoading } = useQuery(
+    GET_ACTIONS_FOR_COMPARE,
+    { variables: { invocationID: leftID }, fetchPolicy: "cache-first" },
+  );
+  const { data: rightData, loading: rightLoading } = useQuery(
+    GET_ACTIONS_FOR_COMPARE,
+    { variables: { invocationID: rightID }, fetchPolicy: "cache-first" },
+  );
+
+  const leftActions = useMemo(
+    () =>
+      (leftData?.getBazelInvocation?.actions ?? []).map((a) =>
+        getFragmentData(ACTION_COMPARE_FRAGMENT, a),
+      ),
+    [leftData],
+  );
+  const rightActions = useMemo(
+    () =>
+      (rightData?.getBazelInvocation?.actions ?? []).map((a) =>
+        getFragmentData(ACTION_COMPARE_FRAGMENT, a),
+      ),
+    [rightData],
+  );
+
+  const rows = useMemo(
+    () => buildJoinedRows(leftActions, rightActions),
+    [leftActions, rightActions],
+  );
+
+  const matchedCount = rows.filter((r) => r.onLeft && r.onRight).length;
+  const slowerCount = rows.filter((r) => r.slowerSide).length;
+
+  const columns: ColumnsType<JoinedActionRow> = [
+    {
+      title: "Label",
+      dataIndex: "label",
+      ellipsis: true,
+      render: (label: string) => (
+        <Typography.Text code style={{ fontSize: 11 }}>
+          {label}
+        </Typography.Text>
+      ),
+    },
+    {
+      title: "Mnemonic",
+      dataIndex: "mnemonic",
+      width: 120,
+      render: (v: string | null) =>
+        v ? (
+          <Tag>{v}</Tag>
+        ) : (
+          <Typography.Text type="secondary">—</Typography.Text>
+        ),
+    },
+    {
+      title: "Primary output",
+      dataIndex: "primaryOutput",
+      ellipsis: true,
+      render: (v: string | null) =>
+        v ? (
+          <Typography.Text code style={{ fontSize: 11 }}>
+            {v}
+          </Typography.Text>
+        ) : (
+          <Typography.Text type="secondary">—</Typography.Text>
+        ),
+    },
+    {
+      title: "Left result",
+      width: 160,
+      render: (_: unknown, row: JoinedActionRow) => (
+        <ActionResultCell
+          outcome={row.leftOutcome}
+          durationMs={row.leftDurationMs}
+          present={row.onLeft}
+          slower={row.slowerSide === "left"}
+        />
+      ),
+    },
+    {
+      title: "Right result",
+      width: 160,
+      render: (_: unknown, row: JoinedActionRow) => (
+        <ActionResultCell
+          outcome={row.rightOutcome}
+          durationMs={row.rightDurationMs}
+          present={row.onRight}
+          slower={row.slowerSide === "right"}
+        />
+      ),
+    },
+  ];
+
+  const coverageText = (() => {
+    const parts: string[] = [
+      `${matchedCount} action${matchedCount !== 1 ? "s" : ""} matched`,
+    ];
+    if (leftTotal !== undefined || rightTotal !== undefined) {
+      const denom = [
+        leftTotal !== undefined ? `~${leftTotal} left` : null,
+        rightTotal !== undefined ? `~${rightTotal} right` : null,
+      ]
+        .filter(Boolean)
+        .join(" / ");
+      parts.push(`of ${denom} total`);
+    }
+    if (slowerCount > 0) {
+      parts.push(
+        `${slowerCount} ≥${DURATION_JUMP_RATIO}x slower on one side (likely cache miss)`,
+      );
+    }
+    parts.push("(sample-based — not exhaustive)");
+    return parts.join(" · ");
+  })();
+
+  if (leftLoading || rightLoading) {
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} align="center">
+        <Spin />
+        <Typography.Text type="secondary">Loading actions…</Typography.Text>
+      </Space>
+    );
+  }
+
+  return (
+    <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+      <Space>
+        <BranchesOutlined />
+        <Typography.Text strong>Action Comparison</Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          {coverageText}
+        </Typography.Text>
+      </Space>
+
+      {rows.length === 0 ? (
+        <Alert
+          type="info"
+          message="No sampled actions found"
+          description="Neither invocation had actions persisted in the sample. Failed actions are always recorded; successful actions are sampled (up to 100 per invocation by default)."
+          showIcon
+        />
+      ) : (
+        <Table<JoinedActionRow>
+          dataSource={rows}
+          columns={columns}
+          size="small"
+          pagination={{ pageSize: 50, hideOnSinglePage: true }}
+          rowClassName={(row) => {
+            if (!row.onLeft || !row.onRight) return "";
+            if (row.leftOutcome !== row.rightOutcome || row.slowerSide)
+              return "action-compare-row-diff";
+            return "action-compare-row-same";
+          }}
+          style={{ overflow: "auto" }}
+        />
+      )}
+
+      <style>{`
+        .action-compare-row-diff td {
+          background: #fff7e6 !important;
+        }
+        .action-compare-row-same td {
+          opacity: 0.6;
+        }
+        [data-theme="dark"] .action-compare-row-diff td {
+          background: #2b2000 !important;
+        }
+      `}</style>
+    </Space>
   );
 };

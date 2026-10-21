@@ -23,6 +23,32 @@
       "name": ""
     },
     "invocationID": "8e56d2d7-ca9b-45e6-a08f-85e7749e3c83",
+    "metrics": {
+      "actionSummary": {
+        "runnerCount": [
+          {
+            "actionsExecuted": 3118,
+            "id": "UnVubmVyQ291bnQ6NQ==",
+            "name": "total"
+          },
+          {
+            "actionsExecuted": 1131,
+            "id": "UnVubmVyQ291bnQ6Ng==",
+            "name": "internal"
+          },
+          {
+            "actionsExecuted": 22,
+            "id": "UnVubmVyQ291bnQ6Nw==",
+            "name": "local"
+          },
+          {
+            "actionsExecuted": 1965,
+            "id": "UnVubmVyQ291bnQ6OA==",
+            "name": "processwrapper-sandbox"
+          }
+        ]
+      }
+    },
     "numFetches": 137,
     "originalCommandLine": {
       "command": "build",
