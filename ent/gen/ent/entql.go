@@ -717,9 +717,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Target",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			target.FieldLabel:      {Type: field.TypeString, Column: target.FieldLabel},
-			target.FieldAspect:     {Type: field.TypeString, Column: target.FieldAspect},
-			target.FieldTargetKind: {Type: field.TypeString, Column: target.FieldTargetKind},
+			target.FieldLabel:                  {Type: field.TypeString, Column: target.FieldLabel},
+			target.FieldAspect:                 {Type: field.TypeString, Column: target.FieldAspect},
+			target.FieldTargetKind:             {Type: field.TypeString, Column: target.FieldTargetKind},
+			target.FieldMaxTestRunDurationInMs: {Type: field.TypeInt64, Column: target.FieldMaxTestRunDurationInMs},
 		},
 	}
 	graph.Nodes[38] = &sqlgraph.Node{
@@ -6033,6 +6034,11 @@ func (f *TargetFilter) WhereAspect(p entql.StringP) {
 // WhereTargetKind applies the entql string predicate on the target_kind field.
 func (f *TargetFilter) WhereTargetKind(p entql.StringP) {
 	f.Where(p.Field(target.FieldTargetKind))
+}
+
+// WhereMaxTestRunDurationInMs applies the entql int64 predicate on the max_test_run_duration_in_ms field.
+func (f *TargetFilter) WhereMaxTestRunDurationInMs(p entql.Int64P) {
+	f.Where(p.Field(target.FieldMaxTestRunDurationInMs))
 }
 
 // WhereHasInstanceName applies a predicate to check if query has an edge instance_name.

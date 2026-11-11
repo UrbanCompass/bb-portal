@@ -28,6 +28,15 @@ func (Target) Fields() []ent.Field {
 		// (e.g.,  e.g. "cc_library rule", "source file",
 		// "generated file") where the completion is reported.
 		field.String("target_kind"),
+
+		// The longest total run duration of this target's tests across all
+		// invocations. Stays 0 for targets that are not tests or have no
+		// recorded run. Kept up to date when test summaries are saved, so that
+		// targets can be sorted by it without scanning test summaries. It is
+		// not nullable on purpose: NULLs sort first on DESC and break cursor
+		// pagination.
+		field.Int64("max_test_run_duration_in_ms").Default(0).
+			Annotations(entgql.OrderField("MAX_TEST_RUN_DURATION_IN_MS")),
 	}
 }
 

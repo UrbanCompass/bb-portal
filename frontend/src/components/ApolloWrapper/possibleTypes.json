@@ -149,6 +149,8 @@
   "TargetEdge": [],
   "TargetMetrics": [],
   "TargetMetricsWhereInput": [],
+  "TargetOrder": [],
+  "TargetOrderField": [],
   "TargetWhereInput": [],
   "TestResult": [],
   "TestResultWhereInput": [],

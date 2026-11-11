@@ -30757,26 +30757,28 @@ func (m *SystemNetworkStatsMutation) ResetEdge(name string) error {
 // TargetMutation represents an operation that mutates the Target nodes in the graph.
 type TargetMutation struct {
 	config
-	op                          Op
-	typ                         string
-	id                          *int64
-	label                       *string
-	aspect                      *string
-	target_kind                 *string
-	clearedFields               map[string]struct{}
-	instance_name               *int64
-	clearedinstance_name        bool
-	invocation_targets          map[int64]struct{}
-	removedinvocation_targets   map[int64]struct{}
-	clearedinvocation_targets   bool
-	target_kind_mappings        map[int64]struct{}
-	removedtarget_kind_mappings map[int64]struct{}
-	clearedtarget_kind_mappings bool
-	test_target                 *int64
-	clearedtest_target          bool
-	done                        bool
-	oldValue                    func(context.Context) (*Target, error)
-	predicates                  []predicate.Target
+	op                             Op
+	typ                            string
+	id                             *int64
+	label                          *string
+	aspect                         *string
+	target_kind                    *string
+	max_test_run_duration_in_ms    *int64
+	addmax_test_run_duration_in_ms *int64
+	clearedFields                  map[string]struct{}
+	instance_name                  *int64
+	clearedinstance_name           bool
+	invocation_targets             map[int64]struct{}
+	removedinvocation_targets      map[int64]struct{}
+	clearedinvocation_targets      bool
+	target_kind_mappings           map[int64]struct{}
+	removedtarget_kind_mappings    map[int64]struct{}
+	clearedtarget_kind_mappings    bool
+	test_target                    *int64
+	clearedtest_target             bool
+	done                           bool
+	oldValue                       func(context.Context) (*Target, error)
+	predicates                     []predicate.Target
 }
 
 var _ ent.Mutation = (*TargetMutation)(nil)
@@ -30989,6 +30991,62 @@ func (m *TargetMutation) OldTargetKind(ctx context.Context) (v string, err error
 // ResetTargetKind resets all changes to the "target_kind" field.
 func (m *TargetMutation) ResetTargetKind() {
 	m.target_kind = nil
+}
+
+// SetMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field.
+func (m *TargetMutation) SetMaxTestRunDurationInMs(i int64) {
+	m.max_test_run_duration_in_ms = &i
+	m.addmax_test_run_duration_in_ms = nil
+}
+
+// MaxTestRunDurationInMs returns the value of the "max_test_run_duration_in_ms" field in the mutation.
+func (m *TargetMutation) MaxTestRunDurationInMs() (r int64, exists bool) {
+	v := m.max_test_run_duration_in_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMaxTestRunDurationInMs returns the old "max_test_run_duration_in_ms" field's value of the Target entity.
+// If the Target object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TargetMutation) OldMaxTestRunDurationInMs(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMaxTestRunDurationInMs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMaxTestRunDurationInMs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMaxTestRunDurationInMs: %w", err)
+	}
+	return oldValue.MaxTestRunDurationInMs, nil
+}
+
+// AddMaxTestRunDurationInMs adds i to the "max_test_run_duration_in_ms" field.
+func (m *TargetMutation) AddMaxTestRunDurationInMs(i int64) {
+	if m.addmax_test_run_duration_in_ms != nil {
+		*m.addmax_test_run_duration_in_ms += i
+	} else {
+		m.addmax_test_run_duration_in_ms = &i
+	}
+}
+
+// AddedMaxTestRunDurationInMs returns the value that was added to the "max_test_run_duration_in_ms" field in this mutation.
+func (m *TargetMutation) AddedMaxTestRunDurationInMs() (r int64, exists bool) {
+	v := m.addmax_test_run_duration_in_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMaxTestRunDurationInMs resets all changes to the "max_test_run_duration_in_ms" field.
+func (m *TargetMutation) ResetMaxTestRunDurationInMs() {
+	m.max_test_run_duration_in_ms = nil
+	m.addmax_test_run_duration_in_ms = nil
 }
 
 // SetInstanceNameID sets the "instance_name" edge to the InstanceName entity by id.
@@ -31211,7 +31269,7 @@ func (m *TargetMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TargetMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.label != nil {
 		fields = append(fields, target.FieldLabel)
 	}
@@ -31220,6 +31278,9 @@ func (m *TargetMutation) Fields() []string {
 	}
 	if m.target_kind != nil {
 		fields = append(fields, target.FieldTargetKind)
+	}
+	if m.max_test_run_duration_in_ms != nil {
+		fields = append(fields, target.FieldMaxTestRunDurationInMs)
 	}
 	return fields
 }
@@ -31235,6 +31296,8 @@ func (m *TargetMutation) Field(name string) (ent.Value, bool) {
 		return m.Aspect()
 	case target.FieldTargetKind:
 		return m.TargetKind()
+	case target.FieldMaxTestRunDurationInMs:
+		return m.MaxTestRunDurationInMs()
 	}
 	return nil, false
 }
@@ -31250,6 +31313,8 @@ func (m *TargetMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldAspect(ctx)
 	case target.FieldTargetKind:
 		return m.OldTargetKind(ctx)
+	case target.FieldMaxTestRunDurationInMs:
+		return m.OldMaxTestRunDurationInMs(ctx)
 	}
 	return nil, fmt.Errorf("unknown Target field %s", name)
 }
@@ -31280,6 +31345,13 @@ func (m *TargetMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTargetKind(v)
 		return nil
+	case target.FieldMaxTestRunDurationInMs:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMaxTestRunDurationInMs(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Target field %s", name)
 }
@@ -31287,13 +31359,21 @@ func (m *TargetMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *TargetMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addmax_test_run_duration_in_ms != nil {
+		fields = append(fields, target.FieldMaxTestRunDurationInMs)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *TargetMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case target.FieldMaxTestRunDurationInMs:
+		return m.AddedMaxTestRunDurationInMs()
+	}
 	return nil, false
 }
 
@@ -31302,6 +31382,13 @@ func (m *TargetMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TargetMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case target.FieldMaxTestRunDurationInMs:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMaxTestRunDurationInMs(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Target numeric field %s", name)
 }
@@ -31337,6 +31424,9 @@ func (m *TargetMutation) ResetField(name string) error {
 		return nil
 	case target.FieldTargetKind:
 		m.ResetTargetKind()
+		return nil
+	case target.FieldMaxTestRunDurationInMs:
+		m.ResetMaxTestRunDurationInMs()
 		return nil
 	}
 	return fmt.Errorf("unknown Target field %s", name)

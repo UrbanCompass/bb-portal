@@ -9022,6 +9022,53 @@ func (_m *TargetQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// TargetOrderFieldMaxTestRunDurationInMs orders Target by max_test_run_duration_in_ms.
+	TargetOrderFieldMaxTestRunDurationInMs = &TargetOrderField{
+		Value: func(_m *Target) (ent.Value, error) {
+			return _m.MaxTestRunDurationInMs, nil
+		},
+		column: target.FieldMaxTestRunDurationInMs,
+		toTerm: target.ByMaxTestRunDurationInMs,
+		toCursor: func(_m *Target) Cursor {
+			return Cursor{
+				ID:    _m.ID,
+				Value: _m.MaxTestRunDurationInMs,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f TargetOrderField) String() string {
+	var str string
+	switch f.column {
+	case TargetOrderFieldMaxTestRunDurationInMs.column:
+		str = "MAX_TEST_RUN_DURATION_IN_MS"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f TargetOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *TargetOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("TargetOrderField %T must be a string", v)
+	}
+	switch str {
+	case "MAX_TEST_RUN_DURATION_IN_MS":
+		*f = *TargetOrderFieldMaxTestRunDurationInMs
+	default:
+		return fmt.Errorf("%s is not a valid TargetOrderField", str)
+	}
+	return nil
+}
+
 // TargetOrderField defines the ordering field of Target.
 type TargetOrderField struct {
 	// Value extracts the ordering value from the given Target.

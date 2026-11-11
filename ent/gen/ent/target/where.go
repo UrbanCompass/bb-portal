@@ -63,6 +63,11 @@ func TargetKind(v string) predicate.Target {
 	return predicate.Target(sql.FieldEQ(FieldTargetKind, v))
 }
 
+// MaxTestRunDurationInMs applies equality check predicate on the "max_test_run_duration_in_ms" field. It's identical to MaxTestRunDurationInMsEQ.
+func MaxTestRunDurationInMs(v int64) predicate.Target {
+	return predicate.Target(sql.FieldEQ(FieldMaxTestRunDurationInMs, v))
+}
+
 // LabelEQ applies the EQ predicate on the "label" field.
 func LabelEQ(v string) predicate.Target {
 	return predicate.Target(sql.FieldEQ(FieldLabel, v))
@@ -256,6 +261,46 @@ func TargetKindEqualFold(v string) predicate.Target {
 // TargetKindContainsFold applies the ContainsFold predicate on the "target_kind" field.
 func TargetKindContainsFold(v string) predicate.Target {
 	return predicate.Target(sql.FieldContainsFold(FieldTargetKind, v))
+}
+
+// MaxTestRunDurationInMsEQ applies the EQ predicate on the "max_test_run_duration_in_ms" field.
+func MaxTestRunDurationInMsEQ(v int64) predicate.Target {
+	return predicate.Target(sql.FieldEQ(FieldMaxTestRunDurationInMs, v))
+}
+
+// MaxTestRunDurationInMsNEQ applies the NEQ predicate on the "max_test_run_duration_in_ms" field.
+func MaxTestRunDurationInMsNEQ(v int64) predicate.Target {
+	return predicate.Target(sql.FieldNEQ(FieldMaxTestRunDurationInMs, v))
+}
+
+// MaxTestRunDurationInMsIn applies the In predicate on the "max_test_run_duration_in_ms" field.
+func MaxTestRunDurationInMsIn(vs ...int64) predicate.Target {
+	return predicate.Target(sql.FieldIn(FieldMaxTestRunDurationInMs, vs...))
+}
+
+// MaxTestRunDurationInMsNotIn applies the NotIn predicate on the "max_test_run_duration_in_ms" field.
+func MaxTestRunDurationInMsNotIn(vs ...int64) predicate.Target {
+	return predicate.Target(sql.FieldNotIn(FieldMaxTestRunDurationInMs, vs...))
+}
+
+// MaxTestRunDurationInMsGT applies the GT predicate on the "max_test_run_duration_in_ms" field.
+func MaxTestRunDurationInMsGT(v int64) predicate.Target {
+	return predicate.Target(sql.FieldGT(FieldMaxTestRunDurationInMs, v))
+}
+
+// MaxTestRunDurationInMsGTE applies the GTE predicate on the "max_test_run_duration_in_ms" field.
+func MaxTestRunDurationInMsGTE(v int64) predicate.Target {
+	return predicate.Target(sql.FieldGTE(FieldMaxTestRunDurationInMs, v))
+}
+
+// MaxTestRunDurationInMsLT applies the LT predicate on the "max_test_run_duration_in_ms" field.
+func MaxTestRunDurationInMsLT(v int64) predicate.Target {
+	return predicate.Target(sql.FieldLT(FieldMaxTestRunDurationInMs, v))
+}
+
+// MaxTestRunDurationInMsLTE applies the LTE predicate on the "max_test_run_duration_in_ms" field.
+func MaxTestRunDurationInMsLTE(v int64) predicate.Target {
+	return predicate.Target(sql.FieldLTE(FieldMaxTestRunDurationInMs, v))
 }
 
 // HasInstanceName applies the HasEdge predicate on the "instance_name" edge.

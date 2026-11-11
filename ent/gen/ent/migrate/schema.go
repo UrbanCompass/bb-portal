@@ -1167,6 +1167,7 @@ var (
 		{Name: "label", Type: field.TypeString},
 		{Name: "aspect", Type: field.TypeString},
 		{Name: "target_kind", Type: field.TypeString},
+		{Name: "max_test_run_duration_in_ms", Type: field.TypeInt64, Default: 0},
 		{Name: "instance_name_targets", Type: field.TypeInt64},
 	}
 	// TargetsTable holds the schema information for the "targets" table.
@@ -1177,7 +1178,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "targets_instance_names_targets",
-				Columns:    []*schema.Column{TargetsColumns[4]},
+				Columns:    []*schema.Column{TargetsColumns[5]},
 				RefColumns: []*schema.Column{InstanceNamesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1186,17 +1187,17 @@ var (
 			{
 				Name:    "target_instance_name_targets",
 				Unique:  false,
-				Columns: []*schema.Column{TargetsColumns[4]},
+				Columns: []*schema.Column{TargetsColumns[5]},
 			},
 			{
 				Name:    "target_label_aspect_instance_name_targets",
 				Unique:  false,
-				Columns: []*schema.Column{TargetsColumns[1], TargetsColumns[2], TargetsColumns[4]},
+				Columns: []*schema.Column{TargetsColumns[1], TargetsColumns[2], TargetsColumns[5]},
 			},
 			{
 				Name:    "target_label_aspect_target_kind_instance_name_targets",
 				Unique:  true,
-				Columns: []*schema.Column{TargetsColumns[1], TargetsColumns[2], TargetsColumns[3], TargetsColumns[4]},
+				Columns: []*schema.Column{TargetsColumns[1], TargetsColumns[2], TargetsColumns[3], TargetsColumns[5]},
 			},
 		},
 	}

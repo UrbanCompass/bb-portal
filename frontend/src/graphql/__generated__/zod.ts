@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import { ActionCacheStatisticsWhereInput, ActionDataWhereInput, ActionSummaryWhereInput, ActionWhereInput, ArtifactMetricsWhereInput, AuthenticatedUserWhereInput, BazelInvocationOrder, BazelInvocationOrderField, BazelInvocationWhereInput, BuildGraphAspectCountWhereInput, BuildGraphEvaluationStatWhereInput, BuildGraphMetricsWhereInput, BuildGraphRuleClassCountWhereInput, BuildOrder, BuildOrderField, BuildTagOrder, BuildTagOrderField, BuildTagWhereInput, BuildWhereInput, ConfigurationWhereInput, ConnectionMetadataWhereInput, CumulativeMetricsWhereInput, DigestWhereInput, DynamicExecutionMetricsWhereInput, DynamicExecutionRaceStatisticWhereInput, FilePathWhereInput, FileWhereInput, GarbageMetricsWhereInput, InstanceNameWhereInput, InvocationTagOrder, InvocationTagOrderField, InvocationTagWhereInput, InvocationTargetAbortReason, InvocationTargetWhereInput, MemoryMetricsWhereInput, MetricsWhereInput, MissDetailWhereInput, NetworkMetricsWhereInput, OrderDirection, PackageLoadMetricsWhereInput, PackageMetricsWhereInput, RunnerCountWhereInput, SourceControlWhereInput, SystemNetworkStatsWhereInput, TargetMetricsWhereInput, TargetWhereInput, TestResultWhereInput, TestSummaryOrder, TestSummaryOrderField, TestSummaryWhereInput, TestTargetWhereInput, TimingMetricsWhereInput, WorkerIdWhereInput, WorkerMetricsWhereInput, WorkerPoolMetricsWhereInput, WorkerPoolStatsWhereInput, WorkerStatsWhereInput } from './graphql'
+import { ActionCacheStatisticsWhereInput, ActionDataWhereInput, ActionSummaryWhereInput, ActionWhereInput, ArtifactMetricsWhereInput, AuthenticatedUserWhereInput, BazelInvocationOrder, BazelInvocationOrderField, BazelInvocationWhereInput, BuildGraphAspectCountWhereInput, BuildGraphEvaluationStatWhereInput, BuildGraphMetricsWhereInput, BuildGraphRuleClassCountWhereInput, BuildOrder, BuildOrderField, BuildTagOrder, BuildTagOrderField, BuildTagWhereInput, BuildWhereInput, ConfigurationWhereInput, ConnectionMetadataWhereInput, CumulativeMetricsWhereInput, DigestWhereInput, DynamicExecutionMetricsWhereInput, DynamicExecutionRaceStatisticWhereInput, FilePathWhereInput, FileWhereInput, GarbageMetricsWhereInput, InstanceNameWhereInput, InvocationTagOrder, InvocationTagOrderField, InvocationTagWhereInput, InvocationTargetAbortReason, InvocationTargetWhereInput, MemoryMetricsWhereInput, MetricsWhereInput, MissDetailWhereInput, NetworkMetricsWhereInput, OrderDirection, PackageLoadMetricsWhereInput, PackageMetricsWhereInput, RunnerCountWhereInput, SourceControlWhereInput, SystemNetworkStatsWhereInput, TargetMetricsWhereInput, TargetOrder, TargetOrderField, TargetWhereInput, TestResultWhereInput, TestSummaryOrder, TestSummaryOrderField, TestSummaryWhereInput, TestTargetWhereInput, TimingMetricsWhereInput, WorkerIdWhereInput, WorkerMetricsWhereInput, WorkerPoolMetricsWhereInput, WorkerPoolStatsWhereInput, WorkerStatsWhereInput } from './graphql'
 
 type Properties<T> = Required<{
   [K in keyof T]: z.ZodType<T[K]>;
@@ -22,6 +22,8 @@ export const InvocationTagOrderFieldSchema = z.enum(InvocationTagOrderField);
 export const InvocationTargetAbortReasonSchema = z.enum(InvocationTargetAbortReason);
 
 export const OrderDirectionSchema = z.enum(OrderDirection);
+
+export const TargetOrderFieldSchema = z.enum(TargetOrderField);
 
 export const TestSummaryOrderFieldSchema = z.enum(TestSummaryOrderField);
 
@@ -2235,6 +2237,13 @@ export function TargetMetricsWhereInputSchema(): z.ZodObject<Properties<TargetMe
   })
 }
 
+export function TargetOrderSchema(): z.ZodObject<Properties<TargetOrder>> {
+  return z.object({
+    direction: OrderDirectionSchema.default(OrderDirection.Asc),
+    field: TargetOrderFieldSchema
+  })
+}
+
 export function TargetWhereInputSchema(): z.ZodObject<Properties<TargetWhereInput>> {
   return z.object({
     and: z.array(z.lazy(() => TargetWhereInputSchema())).nullish(),
@@ -2278,6 +2287,14 @@ export function TargetWhereInputSchema(): z.ZodObject<Properties<TargetWhereInpu
     labelLTE: z.string().nullish(),
     labelNEQ: z.string().nullish(),
     labelNotIn: z.array(z.string().min(1)).nullish(),
+    maxTestRunDurationInMs: z.number().nullish(),
+    maxTestRunDurationInMsGT: z.number().nullish(),
+    maxTestRunDurationInMsGTE: z.number().nullish(),
+    maxTestRunDurationInMsIn: z.array(z.number()).nullish(),
+    maxTestRunDurationInMsLT: z.number().nullish(),
+    maxTestRunDurationInMsLTE: z.number().nullish(),
+    maxTestRunDurationInMsNEQ: z.number().nullish(),
+    maxTestRunDurationInMsNotIn: z.array(z.number()).nullish(),
     not: z.lazy(() => TargetWhereInputSchema().nullish()),
     or: z.array(z.lazy(() => TargetWhereInputSchema())).nullish(),
     targetKind: z.string().nullish(),

@@ -1,3 +1,4 @@
+import type { SorterResult } from "antd/es/table/interface";
 import type React from "react";
 import type {
   TargetWhereInput,
@@ -15,6 +16,11 @@ import { columns } from "./columns";
 interface Props {
   pageSize: number;
   onFilterChange: (where: TargetWhereInput[]) => void;
+  onSortChange: (
+    sorter:
+      | SorterResult<TestListRowFragment>
+      | SorterResult<TestListRowFragment>[],
+  ) => void;
   getPaginationUpdateLink: GetPaginationUpdateLinkType;
   pageInfo: PageInfo;
   testsData: TestListRowFragment[];
@@ -23,6 +29,7 @@ interface Props {
 const TestGrid: React.FC<Props> = ({
   pageSize,
   onFilterChange,
+  onSortChange,
   getPaginationUpdateLink,
   pageInfo,
   testsData,
@@ -46,7 +53,9 @@ const TestGrid: React.FC<Props> = ({
         ),
         rowExpandable: (_) => true,
       }}
-      onChange={(_pagination, filters, _sorter, _extra) => {
+      showSorterTooltip={{ target: "sorter-icon" }}
+      onChange={(_pagination, filters, sorter, _extra) => {
+        onSortChange(sorter);
         onFilterChange(tableFiltersToGraphqlWhere(columns, filters));
       }}
       pageInfo={pageInfo}

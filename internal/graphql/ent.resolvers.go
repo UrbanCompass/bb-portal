@@ -286,9 +286,9 @@ func (r *queryResolver) FindBuilds(ctx context.Context, after *entgql.Cursor[int
 }
 
 // FindTargets is the resolver for the findTargets field.
-func (r *queryResolver) FindTargets(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.TargetWhereInput) (*ent.TargetConnection, error) {
+func (r *queryResolver) FindTargets(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.TargetOrder, where *ent.TargetWhereInput) (*ent.TargetConnection, error) {
 	helpers.PaginationCursorsToUTC(after, before)
-	return r.db.Ent().Target.Query().Paginate(ctx, after, first, before, last, ent.WithTargetFilter(where.Filter))
+	return r.db.Ent().Target.Query().Paginate(ctx, after, first, before, last, ent.WithTargetFilter(where.Filter), ent.WithTargetOrder(orderBy))
 }
 
 // FindTestSummaries is the resolver for the findTestSummaries field.

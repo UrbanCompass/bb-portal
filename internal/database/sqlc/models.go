@@ -392,11 +392,12 @@ type SystemNetworkStat struct {
 }
 
 type Target struct {
-	ID                  int64
-	Label               string
-	Aspect              string
-	TargetKind          string
-	InstanceNameTargets int64
+	ID                     int64
+	Label                  string
+	Aspect                 string
+	TargetKind             string
+	MaxTestRunDurationInMs int64
+	InstanceNameTargets    int64
 }
 
 type TargetKindMapping struct {

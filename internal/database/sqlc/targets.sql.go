@@ -185,3 +185,29 @@ func (q *Queries) FindTargets(ctx context.Context, arg FindTargetsParams) ([]Fin
 	}
 	return items, nil
 }
+
+const updateTargetsMaxTestRunDuration = `-- name: UpdateTargetsMaxTestRunDuration :exec
+UPDATE targets t
+SET max_test_run_duration_in_ms = source.max_duration
+FROM (
+    SELECT
+        it.target_invocation_targets AS target_id,
+        MAX(ts.total_run_duration_in_ms) AS max_duration
+    FROM invocation_targets it
+    JOIN test_summaries ts
+        ON ts.invocation_target_test_summary = it.id
+    WHERE it.bazel_invocation_invocation_targets = $1
+        AND ts.total_run_duration_in_ms IS NOT NULL
+    GROUP BY it.target_invocation_targets
+) AS source
+WHERE t.id = source.target_id
+    AND t.max_test_run_duration_in_ms < source.max_duration
+`
+
+// Raises max_test_run_duration_in_ms for the targets that have a test summary
+// in the given invocation. It never lowers the value, so saving a shorter run
+// does not forget a longer earlier one.
+func (q *Queries) UpdateTargetsMaxTestRunDuration(ctx context.Context, bazelInvocationID int64) error {
+	_, err := q.db.ExecContext(ctx, updateTargetsMaxTestRunDuration, bazelInvocationID)
+	return err
+}

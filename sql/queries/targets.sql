@@ -59,3 +59,23 @@ WHERE ctid IN (
     FOR UPDATE SKIP LOCKED
     LIMIT sqlc.arg(batch_limit)::bigint
 );
+
+-- name: UpdateTargetsMaxTestRunDuration :exec
+-- Raises max_test_run_duration_in_ms for the targets that have a test summary
+-- in the given invocation. It never lowers the value, so saving a shorter run
+-- does not forget a longer earlier one.
+UPDATE targets t
+SET max_test_run_duration_in_ms = source.max_duration
+FROM (
+    SELECT
+        it.target_invocation_targets AS target_id,
+        MAX(ts.total_run_duration_in_ms) AS max_duration
+    FROM invocation_targets it
+    JOIN test_summaries ts
+        ON ts.invocation_target_test_summary = it.id
+    WHERE it.bazel_invocation_invocation_targets = sqlc.arg(bazel_invocation_id)
+        AND ts.total_run_duration_in_ms IS NOT NULL
+    GROUP BY it.target_invocation_targets
+) AS source
+WHERE t.id = source.target_id
+    AND t.max_test_run_duration_in_ms < source.max_duration;

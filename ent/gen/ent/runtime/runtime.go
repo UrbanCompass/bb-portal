@@ -106,6 +106,12 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	targetFields := authschema.Target{}.Fields()
+	_ = targetFields
+	// targetDescMaxTestRunDurationInMs is the schema descriptor for max_test_run_duration_in_ms field.
+	targetDescMaxTestRunDurationInMs := targetFields[3].Descriptor()
+	// target.DefaultMaxTestRunDurationInMs holds the default value on creation for the max_test_run_duration_in_ms field.
+	target.DefaultMaxTestRunDurationInMs = targetDescMaxTestRunDurationInMs.Default.(int64)
 	testsummary.Policy = privacy.NewPolicies(authschema.TestSummary{})
 	testsummary.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {

@@ -19,6 +19,8 @@ const (
 	FieldAspect = "aspect"
 	// FieldTargetKind holds the string denoting the target_kind field in the database.
 	FieldTargetKind = "target_kind"
+	// FieldMaxTestRunDurationInMs holds the string denoting the max_test_run_duration_in_ms field in the database.
+	FieldMaxTestRunDurationInMs = "max_test_run_duration_in_ms"
 	// EdgeInstanceName holds the string denoting the instance_name edge name in mutations.
 	EdgeInstanceName = "instance_name"
 	// EdgeInvocationTargets holds the string denoting the invocation_targets edge name in mutations.
@@ -65,6 +67,7 @@ var Columns = []string{
 	FieldLabel,
 	FieldAspect,
 	FieldTargetKind,
+	FieldMaxTestRunDurationInMs,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "targets"
@@ -96,6 +99,8 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// DefaultMaxTestRunDurationInMs holds the default value on creation for the "max_test_run_duration_in_ms" field.
+	DefaultMaxTestRunDurationInMs int64
 )
 
 // OrderOption defines the ordering options for the Target queries.
@@ -119,6 +124,11 @@ func ByAspect(opts ...sql.OrderTermOption) OrderOption {
 // ByTargetKind orders the results by the target_kind field.
 func ByTargetKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTargetKind, opts...).ToFunc()
+}
+
+// ByMaxTestRunDurationInMs orders the results by the max_test_run_duration_in_ms field.
+func ByMaxTestRunDurationInMs(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMaxTestRunDurationInMs, opts...).ToFunc()
 }
 
 // ByInstanceNameField orders the results by instance_name field.

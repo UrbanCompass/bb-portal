@@ -43,6 +43,20 @@ func (_c *TargetCreate) SetTargetKind(v string) *TargetCreate {
 	return _c
 }
 
+// SetMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field.
+func (_c *TargetCreate) SetMaxTestRunDurationInMs(v int64) *TargetCreate {
+	_c.mutation.SetMaxTestRunDurationInMs(v)
+	return _c
+}
+
+// SetNillableMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field if the given value is not nil.
+func (_c *TargetCreate) SetNillableMaxTestRunDurationInMs(v *int64) *TargetCreate {
+	if v != nil {
+		_c.SetMaxTestRunDurationInMs(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *TargetCreate) SetID(v int64) *TargetCreate {
 	_c.mutation.SetID(v)
@@ -116,6 +130,9 @@ func (_c *TargetCreate) Mutation() *TargetMutation {
 
 // Save creates the Target in the database.
 func (_c *TargetCreate) Save(ctx context.Context) (*Target, error) {
+	if err := _c.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -141,6 +158,15 @@ func (_c *TargetCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_c *TargetCreate) defaults() error {
+	if _, ok := _c.mutation.MaxTestRunDurationInMs(); !ok {
+		v := target.DefaultMaxTestRunDurationInMs
+		_c.mutation.SetMaxTestRunDurationInMs(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_c *TargetCreate) check() error {
 	if _, ok := _c.mutation.Label(); !ok {
@@ -151,6 +177,9 @@ func (_c *TargetCreate) check() error {
 	}
 	if _, ok := _c.mutation.TargetKind(); !ok {
 		return &ValidationError{Name: "target_kind", err: errors.New(`ent: missing required field "Target.target_kind"`)}
+	}
+	if _, ok := _c.mutation.MaxTestRunDurationInMs(); !ok {
+		return &ValidationError{Name: "max_test_run_duration_in_ms", err: errors.New(`ent: missing required field "Target.max_test_run_duration_in_ms"`)}
 	}
 	if len(_c.mutation.InstanceNameIDs()) == 0 {
 		return &ValidationError{Name: "instance_name", err: errors.New(`ent: missing required edge "Target.instance_name"`)}
@@ -199,6 +228,10 @@ func (_c *TargetCreate) createSpec() (*Target, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TargetKind(); ok {
 		_spec.SetField(target.FieldTargetKind, field.TypeString, value)
 		_node.TargetKind = value
+	}
+	if value, ok := _c.mutation.MaxTestRunDurationInMs(); ok {
+		_spec.SetField(target.FieldMaxTestRunDurationInMs, field.TypeInt64, value)
+		_node.MaxTestRunDurationInMs = value
 	}
 	if nodes := _c.mutation.InstanceNameIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -353,6 +386,24 @@ func (u *TargetUpsert) UpdateTargetKind() *TargetUpsert {
 	return u
 }
 
+// SetMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field.
+func (u *TargetUpsert) SetMaxTestRunDurationInMs(v int64) *TargetUpsert {
+	u.Set(target.FieldMaxTestRunDurationInMs, v)
+	return u
+}
+
+// UpdateMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field to the value that was provided on create.
+func (u *TargetUpsert) UpdateMaxTestRunDurationInMs() *TargetUpsert {
+	u.SetExcluded(target.FieldMaxTestRunDurationInMs)
+	return u
+}
+
+// AddMaxTestRunDurationInMs adds v to the "max_test_run_duration_in_ms" field.
+func (u *TargetUpsert) AddMaxTestRunDurationInMs(v int64) *TargetUpsert {
+	u.Add(target.FieldMaxTestRunDurationInMs, v)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -443,6 +494,27 @@ func (u *TargetUpsertOne) UpdateTargetKind() *TargetUpsertOne {
 	})
 }
 
+// SetMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field.
+func (u *TargetUpsertOne) SetMaxTestRunDurationInMs(v int64) *TargetUpsertOne {
+	return u.Update(func(s *TargetUpsert) {
+		s.SetMaxTestRunDurationInMs(v)
+	})
+}
+
+// AddMaxTestRunDurationInMs adds v to the "max_test_run_duration_in_ms" field.
+func (u *TargetUpsertOne) AddMaxTestRunDurationInMs(v int64) *TargetUpsertOne {
+	return u.Update(func(s *TargetUpsert) {
+		s.AddMaxTestRunDurationInMs(v)
+	})
+}
+
+// UpdateMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field to the value that was provided on create.
+func (u *TargetUpsertOne) UpdateMaxTestRunDurationInMs() *TargetUpsertOne {
+	return u.Update(func(s *TargetUpsert) {
+		s.UpdateMaxTestRunDurationInMs()
+	})
+}
+
 // Exec executes the query.
 func (u *TargetUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
@@ -495,6 +567,7 @@ func (_c *TargetCreateBulk) Save(ctx context.Context) ([]*Target, error) {
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TargetMutation)
 				if !ok {
@@ -695,6 +768,27 @@ func (u *TargetUpsertBulk) SetTargetKind(v string) *TargetUpsertBulk {
 func (u *TargetUpsertBulk) UpdateTargetKind() *TargetUpsertBulk {
 	return u.Update(func(s *TargetUpsert) {
 		s.UpdateTargetKind()
+	})
+}
+
+// SetMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field.
+func (u *TargetUpsertBulk) SetMaxTestRunDurationInMs(v int64) *TargetUpsertBulk {
+	return u.Update(func(s *TargetUpsert) {
+		s.SetMaxTestRunDurationInMs(v)
+	})
+}
+
+// AddMaxTestRunDurationInMs adds v to the "max_test_run_duration_in_ms" field.
+func (u *TargetUpsertBulk) AddMaxTestRunDurationInMs(v int64) *TargetUpsertBulk {
+	return u.Update(func(s *TargetUpsert) {
+		s.AddMaxTestRunDurationInMs(v)
+	})
+}
+
+// UpdateMaxTestRunDurationInMs sets the "max_test_run_duration_in_ms" field to the value that was provided on create.
+func (u *TargetUpsertBulk) UpdateMaxTestRunDurationInMs() *TargetUpsertBulk {
+	return u.Update(func(s *TargetUpsert) {
+		s.UpdateMaxTestRunDurationInMs()
 	})
 }
 
