@@ -4482,6 +4482,11 @@ func (_q *TargetQuery) collectField(ctx context.Context, oneNode bool, opCtx *gr
 				selectedFields = append(selectedFields, target.FieldMaxTestRunDurationInMs)
 				fieldSeen[target.FieldMaxTestRunDurationInMs] = struct{}{}
 			}
+		case "lastTestBuildAt":
+			if _, ok := fieldSeen[target.FieldLastTestBuildAt]; !ok {
+				selectedFields = append(selectedFields, target.FieldLastTestBuildAt)
+				fieldSeen[target.FieldLastTestBuildAt] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:

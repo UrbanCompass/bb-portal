@@ -3,6 +3,8 @@
 package target
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/predicate"
@@ -66,6 +68,11 @@ func TargetKind(v string) predicate.Target {
 // MaxTestRunDurationInMs applies equality check predicate on the "max_test_run_duration_in_ms" field. It's identical to MaxTestRunDurationInMsEQ.
 func MaxTestRunDurationInMs(v int64) predicate.Target {
 	return predicate.Target(sql.FieldEQ(FieldMaxTestRunDurationInMs, v))
+}
+
+// LastTestBuildAt applies equality check predicate on the "last_test_build_at" field. It's identical to LastTestBuildAtEQ.
+func LastTestBuildAt(v time.Time) predicate.Target {
+	return predicate.Target(sql.FieldEQ(FieldLastTestBuildAt, v))
 }
 
 // LabelEQ applies the EQ predicate on the "label" field.
@@ -301,6 +308,46 @@ func MaxTestRunDurationInMsLT(v int64) predicate.Target {
 // MaxTestRunDurationInMsLTE applies the LTE predicate on the "max_test_run_duration_in_ms" field.
 func MaxTestRunDurationInMsLTE(v int64) predicate.Target {
 	return predicate.Target(sql.FieldLTE(FieldMaxTestRunDurationInMs, v))
+}
+
+// LastTestBuildAtEQ applies the EQ predicate on the "last_test_build_at" field.
+func LastTestBuildAtEQ(v time.Time) predicate.Target {
+	return predicate.Target(sql.FieldEQ(FieldLastTestBuildAt, v))
+}
+
+// LastTestBuildAtNEQ applies the NEQ predicate on the "last_test_build_at" field.
+func LastTestBuildAtNEQ(v time.Time) predicate.Target {
+	return predicate.Target(sql.FieldNEQ(FieldLastTestBuildAt, v))
+}
+
+// LastTestBuildAtIn applies the In predicate on the "last_test_build_at" field.
+func LastTestBuildAtIn(vs ...time.Time) predicate.Target {
+	return predicate.Target(sql.FieldIn(FieldLastTestBuildAt, vs...))
+}
+
+// LastTestBuildAtNotIn applies the NotIn predicate on the "last_test_build_at" field.
+func LastTestBuildAtNotIn(vs ...time.Time) predicate.Target {
+	return predicate.Target(sql.FieldNotIn(FieldLastTestBuildAt, vs...))
+}
+
+// LastTestBuildAtGT applies the GT predicate on the "last_test_build_at" field.
+func LastTestBuildAtGT(v time.Time) predicate.Target {
+	return predicate.Target(sql.FieldGT(FieldLastTestBuildAt, v))
+}
+
+// LastTestBuildAtGTE applies the GTE predicate on the "last_test_build_at" field.
+func LastTestBuildAtGTE(v time.Time) predicate.Target {
+	return predicate.Target(sql.FieldGTE(FieldLastTestBuildAt, v))
+}
+
+// LastTestBuildAtLT applies the LT predicate on the "last_test_build_at" field.
+func LastTestBuildAtLT(v time.Time) predicate.Target {
+	return predicate.Target(sql.FieldLT(FieldLastTestBuildAt, v))
+}
+
+// LastTestBuildAtLTE applies the LTE predicate on the "last_test_build_at" field.
+func LastTestBuildAtLTE(v time.Time) predicate.Target {
+	return predicate.Target(sql.FieldLTE(FieldLastTestBuildAt, v))
 }
 
 // HasInstanceName applies the HasEdge predicate on the "instance_name" edge.

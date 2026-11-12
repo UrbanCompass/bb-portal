@@ -397,6 +397,7 @@ type Target struct {
 	Aspect                 string
 	TargetKind             string
 	MaxTestRunDurationInMs int64
+	LastTestBuildAt        time.Time
 	InstanceNameTargets    int64
 }
 

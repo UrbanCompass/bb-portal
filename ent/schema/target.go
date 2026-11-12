@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
@@ -18,6 +20,11 @@ type Target struct {
 // Fields of the Target.
 func (Target) Fields() []ent.Field {
 	return []ent.Field{
+		// Targets are only ever added with a higher ID than the ones before,
+		// so ordering by ID DESC lists the newest targets first.
+		field.Int64("id").
+			Annotations(entgql.OrderField("ID")),
+
 		// The label of the target ex: //foo:bar.
 		field.String("label"),
 
@@ -37,6 +44,17 @@ func (Target) Fields() []ent.Field {
 		// pagination.
 		field.Int64("max_test_run_duration_in_ms").Default(0).
 			Annotations(entgql.OrderField("MAX_TEST_RUN_DURATION_IN_MS")),
+
+		// When the most recent invocation that ran this target's tests was
+		// created. Stays at the Unix epoch for targets that have no recorded
+		// run. Kept up to date together with max_test_run_duration_in_ms. It is
+		// not nullable for the same reason as that column.
+		field.Time("last_test_build_at").
+			Default(func() time.Time { return time.Unix(0, 0).UTC() }).
+			Annotations(
+				entgql.OrderField("LAST_TEST_BUILD_AT"),
+				entsql.Default("'1970-01-01 00:00:00+00'"),
+			),
 	}
 }
 
@@ -85,9 +103,3 @@ func (Target) Annotations() []schema.Annotation {
 	}
 }
 
-// Mixin of the Target.
-func (Target) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		Int64IdMixin{},
-	}
-}

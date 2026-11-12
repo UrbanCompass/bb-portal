@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -53,6 +54,20 @@ func (_c *TargetCreate) SetMaxTestRunDurationInMs(v int64) *TargetCreate {
 func (_c *TargetCreate) SetNillableMaxTestRunDurationInMs(v *int64) *TargetCreate {
 	if v != nil {
 		_c.SetMaxTestRunDurationInMs(*v)
+	}
+	return _c
+}
+
+// SetLastTestBuildAt sets the "last_test_build_at" field.
+func (_c *TargetCreate) SetLastTestBuildAt(v time.Time) *TargetCreate {
+	_c.mutation.SetLastTestBuildAt(v)
+	return _c
+}
+
+// SetNillableLastTestBuildAt sets the "last_test_build_at" field if the given value is not nil.
+func (_c *TargetCreate) SetNillableLastTestBuildAt(v *time.Time) *TargetCreate {
+	if v != nil {
+		_c.SetLastTestBuildAt(*v)
 	}
 	return _c
 }
@@ -164,6 +179,13 @@ func (_c *TargetCreate) defaults() error {
 		v := target.DefaultMaxTestRunDurationInMs
 		_c.mutation.SetMaxTestRunDurationInMs(v)
 	}
+	if _, ok := _c.mutation.LastTestBuildAt(); !ok {
+		if target.DefaultLastTestBuildAt == nil {
+			return fmt.Errorf("ent: uninitialized target.DefaultLastTestBuildAt (forgotten import ent/runtime?)")
+		}
+		v := target.DefaultLastTestBuildAt()
+		_c.mutation.SetLastTestBuildAt(v)
+	}
 	return nil
 }
 
@@ -180,6 +202,9 @@ func (_c *TargetCreate) check() error {
 	}
 	if _, ok := _c.mutation.MaxTestRunDurationInMs(); !ok {
 		return &ValidationError{Name: "max_test_run_duration_in_ms", err: errors.New(`ent: missing required field "Target.max_test_run_duration_in_ms"`)}
+	}
+	if _, ok := _c.mutation.LastTestBuildAt(); !ok {
+		return &ValidationError{Name: "last_test_build_at", err: errors.New(`ent: missing required field "Target.last_test_build_at"`)}
 	}
 	if len(_c.mutation.InstanceNameIDs()) == 0 {
 		return &ValidationError{Name: "instance_name", err: errors.New(`ent: missing required edge "Target.instance_name"`)}
@@ -232,6 +257,10 @@ func (_c *TargetCreate) createSpec() (*Target, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.MaxTestRunDurationInMs(); ok {
 		_spec.SetField(target.FieldMaxTestRunDurationInMs, field.TypeInt64, value)
 		_node.MaxTestRunDurationInMs = value
+	}
+	if value, ok := _c.mutation.LastTestBuildAt(); ok {
+		_spec.SetField(target.FieldLastTestBuildAt, field.TypeTime, value)
+		_node.LastTestBuildAt = value
 	}
 	if nodes := _c.mutation.InstanceNameIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -404,6 +433,18 @@ func (u *TargetUpsert) AddMaxTestRunDurationInMs(v int64) *TargetUpsert {
 	return u
 }
 
+// SetLastTestBuildAt sets the "last_test_build_at" field.
+func (u *TargetUpsert) SetLastTestBuildAt(v time.Time) *TargetUpsert {
+	u.Set(target.FieldLastTestBuildAt, v)
+	return u
+}
+
+// UpdateLastTestBuildAt sets the "last_test_build_at" field to the value that was provided on create.
+func (u *TargetUpsert) UpdateLastTestBuildAt() *TargetUpsert {
+	u.SetExcluded(target.FieldLastTestBuildAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -512,6 +553,20 @@ func (u *TargetUpsertOne) AddMaxTestRunDurationInMs(v int64) *TargetUpsertOne {
 func (u *TargetUpsertOne) UpdateMaxTestRunDurationInMs() *TargetUpsertOne {
 	return u.Update(func(s *TargetUpsert) {
 		s.UpdateMaxTestRunDurationInMs()
+	})
+}
+
+// SetLastTestBuildAt sets the "last_test_build_at" field.
+func (u *TargetUpsertOne) SetLastTestBuildAt(v time.Time) *TargetUpsertOne {
+	return u.Update(func(s *TargetUpsert) {
+		s.SetLastTestBuildAt(v)
+	})
+}
+
+// UpdateLastTestBuildAt sets the "last_test_build_at" field to the value that was provided on create.
+func (u *TargetUpsertOne) UpdateLastTestBuildAt() *TargetUpsertOne {
+	return u.Update(func(s *TargetUpsert) {
+		s.UpdateLastTestBuildAt()
 	})
 }
 
@@ -789,6 +844,20 @@ func (u *TargetUpsertBulk) AddMaxTestRunDurationInMs(v int64) *TargetUpsertBulk 
 func (u *TargetUpsertBulk) UpdateMaxTestRunDurationInMs() *TargetUpsertBulk {
 	return u.Update(func(s *TargetUpsert) {
 		s.UpdateMaxTestRunDurationInMs()
+	})
+}
+
+// SetLastTestBuildAt sets the "last_test_build_at" field.
+func (u *TargetUpsertBulk) SetLastTestBuildAt(v time.Time) *TargetUpsertBulk {
+	return u.Update(func(s *TargetUpsert) {
+		s.SetLastTestBuildAt(v)
+	})
+}
+
+// UpdateLastTestBuildAt sets the "last_test_build_at" field to the value that was provided on create.
+func (u *TargetUpsertBulk) UpdateLastTestBuildAt() *TargetUpsertBulk {
+	return u.Update(func(s *TargetUpsert) {
+		s.UpdateLastTestBuildAt()
 	})
 }
 

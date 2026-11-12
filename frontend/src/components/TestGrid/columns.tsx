@@ -9,23 +9,48 @@ import {
   type TargetWhereInput,
   type TestListRowFragment,
 } from "@/graphql/__generated__/graphql";
+import dayjs from "@/lib/dayjs";
 import type { TableColumnTypeWithFilter } from "@/types/TableColumnTypeWithFilter";
 import { readableDurationFromMilliseconds } from "@/utils/time";
 import styles from "../../theme/theme.module.css";
 
-// Slowest tests first, unless the URL asks for something else.
-export const defaultSorting: TargetOrder = {
-  field: TargetOrderField.MaxTestRunDurationInMs,
+// Newest tests first, unless the URL asks for something else. This keeps tests
+// that were just added at the top of the list.
+// The generated TargetOrder has an optional direction. The URL and the table
+// always have one.
+export type TestSorting = Required<TargetOrder>;
+
+export const defaultSorting: TestSorting = {
+  field: TargetOrderField.Id,
   direction: OrderDirection.Desc,
 };
 
-export const columns: TableColumnTypeWithFilter<
-  TestListRowFragment,
-  TargetWhereInput
->[] = [
+// The table column that each sortable field belongs to.
+export const sortColumnKeys: Record<TargetOrderField, string> = {
+  [TargetOrderField.Id]: "target",
+  [TargetOrderField.LastTestBuildAt]: "lastTestBuildAt",
+  [TargetOrderField.MaxTestRunDurationInMs]: "maxTestRunDurationInMs",
+};
+
+// The sort order of a column, taken from the sort that is in use.
+const sortOrderFor = (field: TargetOrderField, sorting: TestSorting) =>
+  sorting.field !== field
+    ? null
+    : sorting.direction === OrderDirection.Asc
+      ? ("ascend" as const)
+      : ("descend" as const);
+
+export const getColumns = (
+  sorting: TestSorting,
+): TableColumnTypeWithFilter<TestListRowFragment, TargetWhereInput>[] => [
   {
     key: "target",
     title: "Target",
+    // Sorting by target means sorting by when the target was added.
+    sortDirections: ["descend", "ascend", "descend"],
+    sortOrder: sortOrderFor(TargetOrderField.Id, sorting),
+    // Using a dummy sorter function as sorting is handled server-side
+    sorter: (_a, _b) => 0,
     render: (_, record) => (
       <Link to="/targets/$targetID/tests" params={{ targetID: record.id }}>
         {record.label}
@@ -61,9 +86,26 @@ export const columns: TableColumnTypeWithFilter<
       </span>
     ),
     width: 140,
-    sortDirections: ["ascend", "descend", "ascend"],
-    defaultSortOrder:
-      defaultSorting.direction === OrderDirection.Asc ? "ascend" : "descend",
+    sortDirections: ["descend", "ascend", "descend"],
+    sortOrder: sortOrderFor(TargetOrderField.MaxTestRunDurationInMs, sorting),
+    // Using a dummy sorter function as sorting is handled server-side
+    sorter: (_a, _b) => 0,
+  },
+  {
+    key: "lastTestBuildAt",
+    title: "Last Run",
+    render: (_, record) => {
+      const at = dayjs(record.lastTestBuildAt);
+      // Targets that have not run yet are stored at the Unix epoch.
+      return (
+        <span className={styles.numberFormat} title={at.format("LLL")}>
+          {at.year() > 1970 ? at.fromNow() : "-"}
+        </span>
+      );
+    },
+    width: 140,
+    sortDirections: ["descend", "ascend", "descend"],
+    sortOrder: sortOrderFor(TargetOrderField.LastTestBuildAt, sorting),
     // Using a dummy sorter function as sorting is handled server-side
     sorter: (_a, _b) => 0,
   },

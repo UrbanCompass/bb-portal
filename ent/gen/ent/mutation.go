@@ -30765,6 +30765,7 @@ type TargetMutation struct {
 	target_kind                    *string
 	max_test_run_duration_in_ms    *int64
 	addmax_test_run_duration_in_ms *int64
+	last_test_build_at             *time.Time
 	clearedFields                  map[string]struct{}
 	instance_name                  *int64
 	clearedinstance_name           bool
@@ -31049,6 +31050,42 @@ func (m *TargetMutation) ResetMaxTestRunDurationInMs() {
 	m.addmax_test_run_duration_in_ms = nil
 }
 
+// SetLastTestBuildAt sets the "last_test_build_at" field.
+func (m *TargetMutation) SetLastTestBuildAt(t time.Time) {
+	m.last_test_build_at = &t
+}
+
+// LastTestBuildAt returns the value of the "last_test_build_at" field in the mutation.
+func (m *TargetMutation) LastTestBuildAt() (r time.Time, exists bool) {
+	v := m.last_test_build_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastTestBuildAt returns the old "last_test_build_at" field's value of the Target entity.
+// If the Target object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TargetMutation) OldLastTestBuildAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastTestBuildAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastTestBuildAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastTestBuildAt: %w", err)
+	}
+	return oldValue.LastTestBuildAt, nil
+}
+
+// ResetLastTestBuildAt resets all changes to the "last_test_build_at" field.
+func (m *TargetMutation) ResetLastTestBuildAt() {
+	m.last_test_build_at = nil
+}
+
 // SetInstanceNameID sets the "instance_name" edge to the InstanceName entity by id.
 func (m *TargetMutation) SetInstanceNameID(id int64) {
 	m.instance_name = &id
@@ -31269,7 +31306,7 @@ func (m *TargetMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TargetMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.label != nil {
 		fields = append(fields, target.FieldLabel)
 	}
@@ -31281,6 +31318,9 @@ func (m *TargetMutation) Fields() []string {
 	}
 	if m.max_test_run_duration_in_ms != nil {
 		fields = append(fields, target.FieldMaxTestRunDurationInMs)
+	}
+	if m.last_test_build_at != nil {
+		fields = append(fields, target.FieldLastTestBuildAt)
 	}
 	return fields
 }
@@ -31298,6 +31338,8 @@ func (m *TargetMutation) Field(name string) (ent.Value, bool) {
 		return m.TargetKind()
 	case target.FieldMaxTestRunDurationInMs:
 		return m.MaxTestRunDurationInMs()
+	case target.FieldLastTestBuildAt:
+		return m.LastTestBuildAt()
 	}
 	return nil, false
 }
@@ -31315,6 +31357,8 @@ func (m *TargetMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldTargetKind(ctx)
 	case target.FieldMaxTestRunDurationInMs:
 		return m.OldMaxTestRunDurationInMs(ctx)
+	case target.FieldLastTestBuildAt:
+		return m.OldLastTestBuildAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Target field %s", name)
 }
@@ -31351,6 +31395,13 @@ func (m *TargetMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMaxTestRunDurationInMs(v)
+		return nil
+	case target.FieldLastTestBuildAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastTestBuildAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Target field %s", name)
@@ -31427,6 +31478,9 @@ func (m *TargetMutation) ResetField(name string) error {
 		return nil
 	case target.FieldMaxTestRunDurationInMs:
 		m.ResetMaxTestRunDurationInMs()
+		return nil
+	case target.FieldLastTestBuildAt:
+		m.ResetLastTestBuildAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Target field %s", name)

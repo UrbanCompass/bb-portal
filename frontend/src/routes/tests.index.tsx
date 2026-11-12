@@ -8,7 +8,11 @@ import {
   TablePaginationVarsSchema,
 } from "@/components/PageCursorTable/types";
 import { TestsPage } from "@/components/pages/Tests";
-import { defaultSorting } from "@/components/TestGrid/columns";
+import {
+  defaultSorting,
+  sortColumnKeys,
+  type TestSorting,
+} from "@/components/TestGrid/columns";
 import { gql } from "@/graphql/__generated__/gql";
 import {
   OrderDirection,
@@ -63,6 +67,7 @@ const TESTS_FRAGMENT = gql(/* GraphQL */ `
     aspect
     targetKind
     maxTestRunDurationInMs
+    lastTestBuildAt
     instanceName {
       name
     }
@@ -86,7 +91,10 @@ export const Route = createFileRoute("/tests/")({
     const pageSize = deps.testTable?.pageSize ?? DEFAULT_PAGE_SIZE;
     const pagination = deps.testTable?.pagination ?? { first: pageSize };
     const where = deps.testTable?.where ?? [];
-    const orderBy = deps.testTable?.orderBy ?? defaultSorting;
+    const orderBy: TestSorting = {
+      ...defaultSorting,
+      ...deps.testTable?.orderBy,
+    };
 
     const { data, error } = await apolloClient.query({
       errorPolicy: "all",
@@ -108,7 +116,12 @@ export const Route = createFileRoute("/tests/")({
       data?.findTargets,
     );
 
-    return { testsData, pageSize, pageInfo: data.findTargets.pageInfo };
+    return {
+      testsData,
+      pageSize,
+      orderBy,
+      pageInfo: data.findTargets.pageInfo,
+    };
   },
   head: (_ctx) => ({ meta: [{ title: generatePageTitle(["Tests"]) }] }),
 });
@@ -128,7 +141,7 @@ const getPaginationUpdateLink = (newPagination: TablePaginationVars) =>
 
 function RouteComponent() {
   const navigate = Route.useNavigate();
-  const { testsData, pageSize, pageInfo } = Route.useLoaderData();
+  const { testsData, pageSize, orderBy, pageInfo } = Route.useLoaderData();
   const onFilterChange = (where: TargetWhereInput[]) => {
     navigate({
       search: (prev): typeof prev => ({
@@ -147,34 +160,34 @@ function RouteComponent() {
       | SorterResult<TestListRowFragment>[],
   ) => {
     const s = Array.isArray(sorter) ? sorter[0] : sorter;
-    if (!s || !s.order) {
-      return;
-    }
-    switch (s.columnKey) {
-      case "maxTestRunDurationInMs": {
-        const orderBy = {
-          field: TargetOrderField.MaxTestRunDurationInMs,
-          direction:
-            s.order === "ascend" ? OrderDirection.Asc : OrderDirection.Desc,
-        };
-        navigate({
-          search: (prev): typeof prev => ({
-            ...prev,
-            testTable: {
-              ...prev.testTable,
-              orderBy,
-              pagination: undefined,
-            },
-          }),
-        });
-        break;
-      }
-    }
+    const field = Object.values(TargetOrderField).find(
+      (f) => sortColumnKeys[f] === s?.columnKey,
+    );
+    // Cleared sort or a column that can not be sorted: use the default order.
+    const orderBy: TestSorting =
+      !s?.order || !field
+        ? defaultSorting
+        : {
+            field,
+            direction:
+              s.order === "ascend" ? OrderDirection.Asc : OrderDirection.Desc,
+          };
+    navigate({
+      search: (prev): typeof prev => ({
+        ...prev,
+        testTable: {
+          ...prev.testTable,
+          orderBy,
+          pagination: undefined,
+        },
+      }),
+    });
   };
   return (
     <TestsPage
       testsData={testsData}
       pageSize={pageSize}
+      sorting={orderBy}
       pageInfo={pageInfo}
       getPaginationUpdateLink={getPaginationUpdateLink}
       onFilterChange={onFilterChange}

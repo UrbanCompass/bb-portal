@@ -3898,6 +3898,7 @@ type Target implements Node {
   aspect: String!
   targetKind: String!
   maxTestRunDurationInMs: Int!
+  lastTestBuildAt: Time!
   instanceName: InstanceName!
   invocationTargets(
     """
@@ -4045,7 +4046,9 @@ input TargetOrder {
 Properties by which Target connections can be ordered.
 """
 enum TargetOrderField {
+  ID
   MAX_TEST_RUN_DURATION_IN_MS
+  LAST_TEST_BUILD_AT
 }
 """
 TargetWhereInput is used for filtering Target objects.
@@ -4125,6 +4128,17 @@ input TargetWhereInput {
   maxTestRunDurationInMsGTE: Int
   maxTestRunDurationInMsLT: Int
   maxTestRunDurationInMsLTE: Int
+  """
+  last_test_build_at field predicates
+  """
+  lastTestBuildAt: Time
+  lastTestBuildAtNEQ: Time
+  lastTestBuildAtIn: [Time!]
+  lastTestBuildAtNotIn: [Time!]
+  lastTestBuildAtGT: Time
+  lastTestBuildAtGTE: Time
+  lastTestBuildAtLT: Time
+  lastTestBuildAtLTE: Time
   """
   instance_name edge predicates
   """

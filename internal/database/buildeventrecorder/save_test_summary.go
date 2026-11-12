@@ -126,8 +126,8 @@ func (r *buildEventRecorder) saveTestSummaryBatch(ctx context.Context, batch []B
 		return status.Errorf(codes.Internal, "Expected to update %d test summaries, but only updated %d", len(batch), affectedRows)
 	}
 
-	if err := tx.Sqlc().UpdateTargetsMaxTestRunDuration(ctx, int64(r.InvocationDbID)); err != nil {
-		return util.StatusWrap(err, "Failed to update max test run duration of targets")
+	if err := tx.Sqlc().UpdateTargetsTestRunStats(ctx, int64(r.InvocationDbID)); err != nil {
+		return util.StatusWrap(err, "Failed to update test run stats of targets")
 	}
 
 	if err := r.saveHandledEventsForBatch(ctx, batch, tx); err != nil {

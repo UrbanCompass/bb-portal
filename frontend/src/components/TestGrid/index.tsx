@@ -1,5 +1,6 @@
 import type { SorterResult } from "antd/es/table/interface";
 import type React from "react";
+import { useMemo } from "react";
 import type {
   TargetWhereInput,
   TestListRowFragment,
@@ -11,10 +12,11 @@ import type {
 } from "../PageCursorTable/types";
 import { tableFiltersToGraphqlWhere } from "../PageCursorTable/utils";
 import TestGridRow from "../TestGridRow";
-import { columns } from "./columns";
+import { getColumns, type TestSorting } from "./columns";
 
 interface Props {
   pageSize: number;
+  sorting: TestSorting;
   onFilterChange: (where: TargetWhereInput[]) => void;
   onSortChange: (
     sorter:
@@ -28,12 +30,14 @@ interface Props {
 
 const TestGrid: React.FC<Props> = ({
   pageSize,
+  sorting,
   onFilterChange,
   onSortChange,
   getPaginationUpdateLink,
   pageInfo,
   testsData,
 }) => {
+  const columns = useMemo(() => getColumns(sorting), [sorting]);
   return (
     <PageCursorTable<TestListRowFragment>
       columns={columns}

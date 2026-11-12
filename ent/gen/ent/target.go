@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -26,6 +27,8 @@ type Target struct {
 	TargetKind string `json:"target_kind,omitempty"`
 	// MaxTestRunDurationInMs holds the value of the "max_test_run_duration_in_ms" field.
 	MaxTestRunDurationInMs int64 `json:"max_test_run_duration_in_ms,omitempty"`
+	// LastTestBuildAt holds the value of the "last_test_build_at" field.
+	LastTestBuildAt time.Time `json:"last_test_build_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TargetQuery when eager-loading is set.
 	Edges                 TargetEdges `json:"edges"`
@@ -102,6 +105,8 @@ func (*Target) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case target.FieldLabel, target.FieldAspect, target.FieldTargetKind:
 			values[i] = new(sql.NullString)
+		case target.FieldLastTestBuildAt:
+			values[i] = new(sql.NullTime)
 		case target.ForeignKeys[0]: // instance_name_targets
 			values[i] = new(sql.NullInt64)
 		default:
@@ -148,6 +153,12 @@ func (_m *Target) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field max_test_run_duration_in_ms", values[i])
 			} else if value.Valid {
 				_m.MaxTestRunDurationInMs = value.Int64
+			}
+		case target.FieldLastTestBuildAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_test_build_at", values[i])
+			} else if value.Valid {
+				_m.LastTestBuildAt = value.Time
 			}
 		case target.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -223,6 +234,9 @@ func (_m *Target) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("max_test_run_duration_in_ms=")
 	builder.WriteString(fmt.Sprintf("%v", _m.MaxTestRunDurationInMs))
+	builder.WriteString(", ")
+	builder.WriteString("last_test_build_at=")
+	builder.WriteString(_m.LastTestBuildAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

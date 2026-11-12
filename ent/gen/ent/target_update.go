@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -91,6 +92,20 @@ func (_u *TargetUpdate) SetNillableMaxTestRunDurationInMs(v *int64) *TargetUpdat
 // AddMaxTestRunDurationInMs adds value to the "max_test_run_duration_in_ms" field.
 func (_u *TargetUpdate) AddMaxTestRunDurationInMs(v int64) *TargetUpdate {
 	_u.mutation.AddMaxTestRunDurationInMs(v)
+	return _u
+}
+
+// SetLastTestBuildAt sets the "last_test_build_at" field.
+func (_u *TargetUpdate) SetLastTestBuildAt(v time.Time) *TargetUpdate {
+	_u.mutation.SetLastTestBuildAt(v)
+	return _u
+}
+
+// SetNillableLastTestBuildAt sets the "last_test_build_at" field if the given value is not nil.
+func (_u *TargetUpdate) SetNillableLastTestBuildAt(v *time.Time) *TargetUpdate {
+	if v != nil {
+		_u.SetLastTestBuildAt(*v)
+	}
 	return _u
 }
 
@@ -274,6 +289,9 @@ func (_u *TargetUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedMaxTestRunDurationInMs(); ok {
 		_spec.AddField(target.FieldMaxTestRunDurationInMs, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.LastTestBuildAt(); ok {
+		_spec.SetField(target.FieldLastTestBuildAt, field.TypeTime, value)
 	}
 	if _u.mutation.InstanceNameCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -506,6 +524,20 @@ func (_u *TargetUpdateOne) AddMaxTestRunDurationInMs(v int64) *TargetUpdateOne {
 	return _u
 }
 
+// SetLastTestBuildAt sets the "last_test_build_at" field.
+func (_u *TargetUpdateOne) SetLastTestBuildAt(v time.Time) *TargetUpdateOne {
+	_u.mutation.SetLastTestBuildAt(v)
+	return _u
+}
+
+// SetNillableLastTestBuildAt sets the "last_test_build_at" field if the given value is not nil.
+func (_u *TargetUpdateOne) SetNillableLastTestBuildAt(v *time.Time) *TargetUpdateOne {
+	if v != nil {
+		_u.SetLastTestBuildAt(*v)
+	}
+	return _u
+}
+
 // SetInstanceNameID sets the "instance_name" edge to the InstanceName entity by ID.
 func (_u *TargetUpdateOne) SetInstanceNameID(id int64) *TargetUpdateOne {
 	_u.mutation.SetInstanceNameID(id)
@@ -716,6 +748,9 @@ func (_u *TargetUpdateOne) sqlSave(ctx context.Context) (_node *Target, err erro
 	}
 	if value, ok := _u.mutation.AddedMaxTestRunDurationInMs(); ok {
 		_spec.AddField(target.FieldMaxTestRunDurationInMs, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.LastTestBuildAt(); ok {
+		_spec.SetField(target.FieldLastTestBuildAt, field.TypeTime, value)
 	}
 	if _u.mutation.InstanceNameCleared() {
 		edge := &sqlgraph.EdgeSpec{

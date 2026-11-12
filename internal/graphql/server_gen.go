@@ -585,6 +585,7 @@ type ComplexityRoot struct {
 		InstanceName           func(childComplexity int) int
 		InvocationTargets      func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.InvocationTargetWhereInput) int
 		Label                  func(childComplexity int) int
+		LastTestBuildAt        func(childComplexity int) int
 		MaxTestRunDurationInMs func(childComplexity int) int
 		TargetKind             func(childComplexity int) int
 		TestTarget             func(childComplexity int) int
@@ -3373,6 +3374,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Target.Label(childComplexity), true
+	case "Target.lastTestBuildAt":
+		if e.ComplexityRoot.Target.LastTestBuildAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Target.LastTestBuildAt(childComplexity), true
 	case "Target.maxTestRunDurationInMs":
 		if e.ComplexityRoot.Target.MaxTestRunDurationInMs == nil {
 			break
@@ -4982,6 +4989,8 @@ func (ec *executionContext) childFields_Target(ctx context.Context, field graphq
 		return ec.fieldContext_Target_targetKind(ctx, field)
 	case "maxTestRunDurationInMs":
 		return ec.fieldContext_Target_maxTestRunDurationInMs(ctx, field)
+	case "lastTestBuildAt":
+		return ec.fieldContext_Target_lastTestBuildAt(ctx, field)
 	case "instanceName":
 		return ec.fieldContext_Target_instanceName(ctx, field)
 	case "invocationTargets":
@@ -14557,6 +14566,29 @@ func (ec *executionContext) _Target_maxTestRunDurationInMs(ctx context.Context, 
 }
 func (ec *executionContext) fieldContext_Target_maxTestRunDurationInMs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Target", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Target_lastTestBuildAt(ctx context.Context, field graphql.CollectedField, obj *ent.Target) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Target_lastTestBuildAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.LastTestBuildAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Target_lastTestBuildAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Target", field, false, false, errors.New("field of type Time does not have child fields"))
 }
 
 func (ec *executionContext) _Target_instanceName(ctx context.Context, field graphql.CollectedField, obj *ent.Target) (ret graphql.Marshaler) {
@@ -33708,7 +33740,7 @@ func (ec *executionContext) unmarshalInputTargetWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "label", "labelNEQ", "labelIn", "labelNotIn", "labelGT", "labelGTE", "labelLT", "labelLTE", "labelContains", "labelHasPrefix", "labelHasSuffix", "labelEqualFold", "labelContainsFold", "aspect", "aspectNEQ", "aspectIn", "aspectNotIn", "aspectGT", "aspectGTE", "aspectLT", "aspectLTE", "aspectContains", "aspectHasPrefix", "aspectHasSuffix", "aspectEqualFold", "aspectContainsFold", "targetKind", "targetKindNEQ", "targetKindIn", "targetKindNotIn", "targetKindGT", "targetKindGTE", "targetKindLT", "targetKindLTE", "targetKindContains", "targetKindHasPrefix", "targetKindHasSuffix", "targetKindEqualFold", "targetKindContainsFold", "maxTestRunDurationInMs", "maxTestRunDurationInMsNEQ", "maxTestRunDurationInMsIn", "maxTestRunDurationInMsNotIn", "maxTestRunDurationInMsGT", "maxTestRunDurationInMsGTE", "maxTestRunDurationInMsLT", "maxTestRunDurationInMsLTE", "hasInstanceName", "hasInstanceNameWith", "hasInvocationTargets", "hasInvocationTargetsWith", "hasTestTarget", "hasTestTargetWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "label", "labelNEQ", "labelIn", "labelNotIn", "labelGT", "labelGTE", "labelLT", "labelLTE", "labelContains", "labelHasPrefix", "labelHasSuffix", "labelEqualFold", "labelContainsFold", "aspect", "aspectNEQ", "aspectIn", "aspectNotIn", "aspectGT", "aspectGTE", "aspectLT", "aspectLTE", "aspectContains", "aspectHasPrefix", "aspectHasSuffix", "aspectEqualFold", "aspectContainsFold", "targetKind", "targetKindNEQ", "targetKindIn", "targetKindNotIn", "targetKindGT", "targetKindGTE", "targetKindLT", "targetKindLTE", "targetKindContains", "targetKindHasPrefix", "targetKindHasSuffix", "targetKindEqualFold", "targetKindContainsFold", "maxTestRunDurationInMs", "maxTestRunDurationInMsNEQ", "maxTestRunDurationInMsIn", "maxTestRunDurationInMsNotIn", "maxTestRunDurationInMsGT", "maxTestRunDurationInMsGTE", "maxTestRunDurationInMsLT", "maxTestRunDurationInMsLTE", "lastTestBuildAt", "lastTestBuildAtNEQ", "lastTestBuildAtIn", "lastTestBuildAtNotIn", "lastTestBuildAtGT", "lastTestBuildAtGTE", "lastTestBuildAtLT", "lastTestBuildAtLTE", "hasInstanceName", "hasInstanceNameWith", "hasInvocationTargets", "hasInvocationTargetsWith", "hasTestTarget", "hasTestTargetWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34137,6 +34169,62 @@ func (ec *executionContext) unmarshalInputTargetWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.MaxTestRunDurationInMsLTE = data
+		case "lastTestBuildAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAt = data
+		case "lastTestBuildAtNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtNEQ = data
+		case "lastTestBuildAtIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtIn = data
+		case "lastTestBuildAtNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtNotIn = data
+		case "lastTestBuildAtGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtGT = data
+		case "lastTestBuildAtGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtGTE = data
+		case "lastTestBuildAtLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtLT = data
+		case "lastTestBuildAtLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtLTE = data
 		case "hasInstanceName":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasInstanceName"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -46877,6 +46965,11 @@ func (ec *executionContext) _Target(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "maxTestRunDurationInMs":
 			out.Values[i] = ec._Target_maxTestRunDurationInMs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "lastTestBuildAt":
+			out.Values[i] = ec._Target_lastTestBuildAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
