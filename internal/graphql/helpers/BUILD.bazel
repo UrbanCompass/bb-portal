@@ -1,4 +1,4 @@
-load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "helpers",
@@ -9,4 +9,14 @@ go_library(
     importpath = "github.com/buildbarn/bb-portal/internal/graphql/helpers",
     visibility = ["//:__subpackages__"],
     deps = ["@io_entgo_contrib//entgql"],
+)
+
+go_test(
+    name = "helpers_test",
+    srcs = ["resolver.helpers_test.go"],
+    deps = [
+        ":helpers",
+        "@com_github_stretchr_testify//require",
+        "@io_entgo_contrib//entgql",
+    ],
 )
