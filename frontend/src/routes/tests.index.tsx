@@ -1,4 +1,5 @@
 import { createFileRoute, linkOptions } from "@tanstack/react-router";
+import type { SorterResult } from "antd/es/table/interface";
 import z from "zod";
 import { apolloClient } from "@/components/ApolloWrapper";
 import { DEFAULT_PAGE_SIZE } from "@/components/PageCursorTable";
@@ -7,12 +8,22 @@ import {
   TablePaginationVarsSchema,
 } from "@/components/PageCursorTable/types";
 import { TestsPage } from "@/components/pages/Tests";
+import {
+  defaultSorting,
+  sortColumnKeys,
+  type TestSorting,
+} from "@/components/TestGrid/columns";
 import { gql } from "@/graphql/__generated__/gql";
-import type {
-  TargetWhereInput,
-  TestListRowFragment,
+import {
+  OrderDirection,
+  TargetOrderField,
+  type TargetWhereInput,
+  type TestListRowFragment,
 } from "@/graphql/__generated__/graphql";
-import { TargetWhereInputSchema } from "@/graphql/__generated__/zod";
+import {
+  TargetOrderSchema,
+  TargetWhereInputSchema,
+} from "@/graphql/__generated__/zod";
 import { NotFoundError } from "@/main";
 import { generatePageTitle } from "@/utils/generatePageTitle";
 import { parseGraphqlEdgeListWithFragment } from "@/utils/parseGraphqlEdgeList";
@@ -24,6 +35,7 @@ export const GET_TESTS = gql(/* GraphQl */ `
     $before: Cursor
     $last: Int
     $where: TargetWhereInput
+    $orderBy: TargetOrder
   ) {
     findTargets(
       after: $after
@@ -31,6 +43,7 @@ export const GET_TESTS = gql(/* GraphQl */ `
       before: $before
       last: $last
       where: $where
+      orderBy: $orderBy
     ) {
       pageInfo {
         startCursor
@@ -53,6 +66,8 @@ const TESTS_FRAGMENT = gql(/* GraphQL */ `
     label
     aspect
     targetKind
+    maxTestRunDurationInMs
+    lastTestBuildAt
     instanceName {
       name
     }
@@ -62,6 +77,7 @@ const TESTS_FRAGMENT = gql(/* GraphQL */ `
 const TestSearchSchema = z.object({
   testTable: TablePaginationVarsSchema.extend({
     where: z.array(TargetWhereInputSchema().partial()).optional(),
+    orderBy: TargetOrderSchema().optional(),
   }).optional(),
 });
 
@@ -75,6 +91,10 @@ export const Route = createFileRoute("/tests/")({
     const pageSize = deps.testTable?.pageSize ?? DEFAULT_PAGE_SIZE;
     const pagination = deps.testTable?.pagination ?? { first: pageSize };
     const where = deps.testTable?.where ?? [];
+    const orderBy: TestSorting = {
+      ...defaultSorting,
+      ...deps.testTable?.orderBy,
+    };
 
     const { data, error } = await apolloClient.query({
       errorPolicy: "all",
@@ -83,6 +103,7 @@ export const Route = createFileRoute("/tests/")({
         where: {
           and: [{ hasTestTarget: true }, ...where],
         },
+        orderBy,
         ...pagination,
       },
     });
@@ -95,7 +116,12 @@ export const Route = createFileRoute("/tests/")({
       data?.findTargets,
     );
 
-    return { testsData, pageSize, pageInfo: data.findTargets.pageInfo };
+    return {
+      testsData,
+      pageSize,
+      orderBy,
+      pageInfo: data.findTargets.pageInfo,
+    };
   },
   head: (_ctx) => ({ meta: [{ title: generatePageTitle(["Tests"]) }] }),
 });
@@ -115,7 +141,7 @@ const getPaginationUpdateLink = (newPagination: TablePaginationVars) =>
 
 function RouteComponent() {
   const navigate = Route.useNavigate();
-  const { testsData, pageSize, pageInfo } = Route.useLoaderData();
+  const { testsData, pageSize, orderBy, pageInfo } = Route.useLoaderData();
   const onFilterChange = (where: TargetWhereInput[]) => {
     navigate({
       search: (prev): typeof prev => ({
@@ -128,13 +154,44 @@ function RouteComponent() {
       }),
     });
   };
+  const onSortChange = (
+    sorter:
+      | SorterResult<TestListRowFragment>
+      | SorterResult<TestListRowFragment>[],
+  ) => {
+    const s = Array.isArray(sorter) ? sorter[0] : sorter;
+    const field = Object.values(TargetOrderField).find(
+      (f) => sortColumnKeys[f] === s?.columnKey,
+    );
+    // Cleared sort or a column that can not be sorted: use the default order.
+    const orderBy: TestSorting =
+      !s?.order || !field
+        ? defaultSorting
+        : {
+            field,
+            direction:
+              s.order === "ascend" ? OrderDirection.Asc : OrderDirection.Desc,
+          };
+    navigate({
+      search: (prev): typeof prev => ({
+        ...prev,
+        testTable: {
+          ...prev.testTable,
+          orderBy,
+          pagination: undefined,
+        },
+      }),
+    });
+  };
   return (
     <TestsPage
       testsData={testsData}
       pageSize={pageSize}
+      sorting={orderBy}
       pageInfo={pageInfo}
       getPaginationUpdateLink={getPaginationUpdateLink}
       onFilterChange={onFilterChange}
+      onSortChange={onSortChange}
     />
   );
 }

@@ -9022,6 +9022,89 @@ func (_m *TargetQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// TargetOrderFieldID orders Target by id.
+	TargetOrderFieldID = &TargetOrderField{
+		Value: func(_m *Target) (ent.Value, error) {
+			return _m.ID, nil
+		},
+		column: target.FieldID,
+		toTerm: target.ByID,
+		toCursor: func(_m *Target) Cursor {
+			return Cursor{
+				ID:    _m.ID,
+				Value: _m.ID,
+			}
+		},
+	}
+	// TargetOrderFieldMaxTestRunDurationInMs orders Target by max_test_run_duration_in_ms.
+	TargetOrderFieldMaxTestRunDurationInMs = &TargetOrderField{
+		Value: func(_m *Target) (ent.Value, error) {
+			return _m.MaxTestRunDurationInMs, nil
+		},
+		column: target.FieldMaxTestRunDurationInMs,
+		toTerm: target.ByMaxTestRunDurationInMs,
+		toCursor: func(_m *Target) Cursor {
+			return Cursor{
+				ID:    _m.ID,
+				Value: _m.MaxTestRunDurationInMs,
+			}
+		},
+	}
+	// TargetOrderFieldLastTestBuildAt orders Target by last_test_build_at.
+	TargetOrderFieldLastTestBuildAt = &TargetOrderField{
+		Value: func(_m *Target) (ent.Value, error) {
+			return _m.LastTestBuildAt, nil
+		},
+		column: target.FieldLastTestBuildAt,
+		toTerm: target.ByLastTestBuildAt,
+		toCursor: func(_m *Target) Cursor {
+			return Cursor{
+				ID:    _m.ID,
+				Value: _m.LastTestBuildAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f TargetOrderField) String() string {
+	var str string
+	switch f.column {
+	case TargetOrderFieldID.column:
+		str = "ID"
+	case TargetOrderFieldMaxTestRunDurationInMs.column:
+		str = "MAX_TEST_RUN_DURATION_IN_MS"
+	case TargetOrderFieldLastTestBuildAt.column:
+		str = "LAST_TEST_BUILD_AT"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f TargetOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *TargetOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("TargetOrderField %T must be a string", v)
+	}
+	switch str {
+	case "ID":
+		*f = *TargetOrderFieldID
+	case "MAX_TEST_RUN_DURATION_IN_MS":
+		*f = *TargetOrderFieldMaxTestRunDurationInMs
+	case "LAST_TEST_BUILD_AT":
+		*f = *TargetOrderFieldLastTestBuildAt
+	default:
+		return fmt.Errorf("%s is not a valid TargetOrderField", str)
+	}
+	return nil
+}
+
 // TargetOrderField defines the ordering field of Target.
 type TargetOrderField struct {
 	// Value extracts the ordering value from the given Target.

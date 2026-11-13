@@ -69,6 +69,11 @@ type Querier interface {
 	UpdateBuildTimestampFromInvocation(ctx context.Context, invocationID int64) error
 	UpdateCompletedInvocationWithEndTimeFromEventMetadata(ctx context.Context) (int64, error)
 	UpdateEventMetadata(ctx context.Context, arg UpdateEventMetadataParams) (int64, error)
+	// Updates the test run values of the targets that have a test summary in the
+	// given invocation. max_test_run_duration_in_ms and last_test_build_at only
+	// move up, so saving a shorter or older run does not forget a longer or newer
+	// earlier one.
+	UpdateTargetsTestRunStats(ctx context.Context, bazelInvocationID int64) error
 	UpdateTestSummariesBulk(ctx context.Context, arg UpdateTestSummariesBulkParams) (int64, error)
 }
 

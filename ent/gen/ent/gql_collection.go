@@ -4477,6 +4477,16 @@ func (_q *TargetQuery) collectField(ctx context.Context, oneNode bool, opCtx *gr
 				selectedFields = append(selectedFields, target.FieldTargetKind)
 				fieldSeen[target.FieldTargetKind] = struct{}{}
 			}
+		case "maxTestRunDurationInMs":
+			if _, ok := fieldSeen[target.FieldMaxTestRunDurationInMs]; !ok {
+				selectedFields = append(selectedFields, target.FieldMaxTestRunDurationInMs)
+				fieldSeen[target.FieldMaxTestRunDurationInMs] = struct{}{}
+			}
+		case "lastTestBuildAt":
+			if _, ok := fieldSeen[target.FieldLastTestBuildAt]; !ok {
+				selectedFields = append(selectedFields, target.FieldLastTestBuildAt)
+				fieldSeen[target.FieldLastTestBuildAt] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:
@@ -4511,6 +4521,28 @@ func newTargetPaginateArgs(rv map[string]any) *targetPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &TargetOrder{Field: &TargetOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithTargetOrder(order))
+			}
+		case *TargetOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithTargetOrder(v))
+			}
+		}
 	}
 	if v, ok := rv[whereField].(*TargetWhereInput); ok {
 		args.opts = append(args.opts, WithTargetFilter(v.Filter))

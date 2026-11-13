@@ -4,6 +4,7 @@ package runtime
 
 import (
 	"context"
+	"time"
 
 	"github.com/buildbarn/bb-portal/ent/authschema"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/authenticateduser"
@@ -106,6 +107,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	targetFields := authschema.Target{}.Fields()
+	_ = targetFields
+	// targetDescMaxTestRunDurationInMs is the schema descriptor for max_test_run_duration_in_ms field.
+	targetDescMaxTestRunDurationInMs := targetFields[4].Descriptor()
+	// target.DefaultMaxTestRunDurationInMs holds the default value on creation for the max_test_run_duration_in_ms field.
+	target.DefaultMaxTestRunDurationInMs = targetDescMaxTestRunDurationInMs.Default.(int64)
+	// targetDescLastTestBuildAt is the schema descriptor for last_test_build_at field.
+	targetDescLastTestBuildAt := targetFields[5].Descriptor()
+	// target.DefaultLastTestBuildAt holds the default value on creation for the last_test_build_at field.
+	target.DefaultLastTestBuildAt = targetDescLastTestBuildAt.Default.(func() time.Time)
 	testsummary.Policy = privacy.NewPolicies(authschema.TestSummary{})
 	testsummary.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {

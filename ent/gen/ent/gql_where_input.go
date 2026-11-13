@@ -12154,6 +12154,26 @@ type TargetWhereInput struct {
 	TargetKindEqualFold    *string  `json:"targetKindEqualFold,omitempty"`
 	TargetKindContainsFold *string  `json:"targetKindContainsFold,omitempty"`
 
+	// "max_test_run_duration_in_ms" field predicates.
+	MaxTestRunDurationInMs      *int64  `json:"maxTestRunDurationInMs,omitempty"`
+	MaxTestRunDurationInMsNEQ   *int64  `json:"maxTestRunDurationInMsNEQ,omitempty"`
+	MaxTestRunDurationInMsIn    []int64 `json:"maxTestRunDurationInMsIn,omitempty"`
+	MaxTestRunDurationInMsNotIn []int64 `json:"maxTestRunDurationInMsNotIn,omitempty"`
+	MaxTestRunDurationInMsGT    *int64  `json:"maxTestRunDurationInMsGT,omitempty"`
+	MaxTestRunDurationInMsGTE   *int64  `json:"maxTestRunDurationInMsGTE,omitempty"`
+	MaxTestRunDurationInMsLT    *int64  `json:"maxTestRunDurationInMsLT,omitempty"`
+	MaxTestRunDurationInMsLTE   *int64  `json:"maxTestRunDurationInMsLTE,omitempty"`
+
+	// "last_test_build_at" field predicates.
+	LastTestBuildAt      *time.Time  `json:"lastTestBuildAt,omitempty"`
+	LastTestBuildAtNEQ   *time.Time  `json:"lastTestBuildAtNEQ,omitempty"`
+	LastTestBuildAtIn    []time.Time `json:"lastTestBuildAtIn,omitempty"`
+	LastTestBuildAtNotIn []time.Time `json:"lastTestBuildAtNotIn,omitempty"`
+	LastTestBuildAtGT    *time.Time  `json:"lastTestBuildAtGT,omitempty"`
+	LastTestBuildAtGTE   *time.Time  `json:"lastTestBuildAtGTE,omitempty"`
+	LastTestBuildAtLT    *time.Time  `json:"lastTestBuildAtLT,omitempty"`
+	LastTestBuildAtLTE   *time.Time  `json:"lastTestBuildAtLTE,omitempty"`
+
 	// "instance_name" edge predicates.
 	HasInstanceName     *bool                     `json:"hasInstanceName,omitempty"`
 	HasInstanceNameWith []*InstanceNameWhereInput `json:"hasInstanceNameWith,omitempty"`
@@ -12378,6 +12398,54 @@ func (i *TargetWhereInput) P() (predicate.Target, error) {
 	}
 	if i.TargetKindContainsFold != nil {
 		predicates = append(predicates, target.TargetKindContainsFold(*i.TargetKindContainsFold))
+	}
+	if i.MaxTestRunDurationInMs != nil {
+		predicates = append(predicates, target.MaxTestRunDurationInMsEQ(*i.MaxTestRunDurationInMs))
+	}
+	if i.MaxTestRunDurationInMsNEQ != nil {
+		predicates = append(predicates, target.MaxTestRunDurationInMsNEQ(*i.MaxTestRunDurationInMsNEQ))
+	}
+	if len(i.MaxTestRunDurationInMsIn) > 0 {
+		predicates = append(predicates, target.MaxTestRunDurationInMsIn(i.MaxTestRunDurationInMsIn...))
+	}
+	if len(i.MaxTestRunDurationInMsNotIn) > 0 {
+		predicates = append(predicates, target.MaxTestRunDurationInMsNotIn(i.MaxTestRunDurationInMsNotIn...))
+	}
+	if i.MaxTestRunDurationInMsGT != nil {
+		predicates = append(predicates, target.MaxTestRunDurationInMsGT(*i.MaxTestRunDurationInMsGT))
+	}
+	if i.MaxTestRunDurationInMsGTE != nil {
+		predicates = append(predicates, target.MaxTestRunDurationInMsGTE(*i.MaxTestRunDurationInMsGTE))
+	}
+	if i.MaxTestRunDurationInMsLT != nil {
+		predicates = append(predicates, target.MaxTestRunDurationInMsLT(*i.MaxTestRunDurationInMsLT))
+	}
+	if i.MaxTestRunDurationInMsLTE != nil {
+		predicates = append(predicates, target.MaxTestRunDurationInMsLTE(*i.MaxTestRunDurationInMsLTE))
+	}
+	if i.LastTestBuildAt != nil {
+		predicates = append(predicates, target.LastTestBuildAtEQ(*i.LastTestBuildAt))
+	}
+	if i.LastTestBuildAtNEQ != nil {
+		predicates = append(predicates, target.LastTestBuildAtNEQ(*i.LastTestBuildAtNEQ))
+	}
+	if len(i.LastTestBuildAtIn) > 0 {
+		predicates = append(predicates, target.LastTestBuildAtIn(i.LastTestBuildAtIn...))
+	}
+	if len(i.LastTestBuildAtNotIn) > 0 {
+		predicates = append(predicates, target.LastTestBuildAtNotIn(i.LastTestBuildAtNotIn...))
+	}
+	if i.LastTestBuildAtGT != nil {
+		predicates = append(predicates, target.LastTestBuildAtGT(*i.LastTestBuildAtGT))
+	}
+	if i.LastTestBuildAtGTE != nil {
+		predicates = append(predicates, target.LastTestBuildAtGTE(*i.LastTestBuildAtGTE))
+	}
+	if i.LastTestBuildAtLT != nil {
+		predicates = append(predicates, target.LastTestBuildAtLT(*i.LastTestBuildAtLT))
+	}
+	if i.LastTestBuildAtLTE != nil {
+		predicates = append(predicates, target.LastTestBuildAtLTE(*i.LastTestBuildAtLTE))
 	}
 
 	if i.HasInstanceName != nil {

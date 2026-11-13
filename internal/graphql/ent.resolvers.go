@@ -286,9 +286,15 @@ func (r *queryResolver) FindBuilds(ctx context.Context, after *entgql.Cursor[int
 }
 
 // FindTargets is the resolver for the findTargets field.
-func (r *queryResolver) FindTargets(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.TargetWhereInput) (*ent.TargetConnection, error) {
+func (r *queryResolver) FindTargets(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.TargetOrder, where *ent.TargetWhereInput) (*ent.TargetConnection, error) {
 	helpers.PaginationCursorsToUTC(after, before)
-	return r.db.Ent().Target.Query().Paginate(ctx, after, first, before, last, ent.WithTargetFilter(where.Filter))
+	// Compare by name: gqlgen copies the field value, so pointers differ.
+	if orderBy != nil && orderBy.Field != nil && orderBy.Field.String() == ent.TargetOrderFieldMaxTestRunDurationInMs.String() {
+		// Targets that never ran have a duration of 0, which entgql leaves
+		// out of the cursor. Without this, paging past them repeats rows.
+		helpers.RestoreZeroCursorValue(after, before)
+	}
+	return r.db.Ent().Target.Query().Paginate(ctx, after, first, before, last, ent.WithTargetFilter(where.Filter), ent.WithTargetOrder(orderBy))
 }
 
 // FindTestSummaries is the resolver for the findTestSummaries field.

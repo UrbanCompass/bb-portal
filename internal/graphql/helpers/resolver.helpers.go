@@ -40,6 +40,23 @@ func PaginationCursorsToUTC(after, before *entgql.Cursor[int64]) {
 	paginationCursorToUTC(before)
 }
 
+// RestoreZeroCursorValue puts back a sort value of 0 that entgql dropped from
+// a cursor.
+//
+// entgql tags Cursor.Value with `msgpack:"omitempty"`, so a row whose sort
+// value is 0 gets a cursor that has only the ID. When that cursor comes back,
+// entgql sees no value and pages by ID alone, which repeats rows that have a
+// higher sort value but a lower ID. This is only safe to call when sorting by
+// a NOT NULL integer column, where a missing value can only have been 0. Do
+// not call it when sorting by ID, because those cursors never have a value.
+func RestoreZeroCursorValue(after, before *entgql.Cursor[int64]) {
+	for _, cursor := range []*entgql.Cursor[int64]{after, before} {
+		if cursor != nil && cursor.Value == nil {
+			cursor.Value = int64(0)
+		}
+	}
+}
+
 // StringMapToAnyMap converts a map[string]string to a map[string]any. This is
 // useful for converting from the database type to the Graphql type.
 func StringMapToAnyMap(m map[string]string) map[string]any {

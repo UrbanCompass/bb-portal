@@ -59,3 +59,34 @@ WHERE ctid IN (
     FOR UPDATE SKIP LOCKED
     LIMIT sqlc.arg(batch_limit)::bigint
 );
+
+-- name: UpdateTargetsTestRunStats :exec
+-- Updates the test run values of the targets that have a test summary in the
+-- given invocation. max_test_run_duration_in_ms and last_test_build_at only
+-- move up, so saving a shorter or older run does not forget a longer or newer
+-- earlier one.
+UPDATE targets t
+SET
+    max_test_run_duration_in_ms = GREATEST(
+        t.max_test_run_duration_in_ms,
+        COALESCE(source.max_duration, 0)
+    ),
+    last_test_build_at = GREATEST(t.last_test_build_at, source.build_at)
+FROM (
+    SELECT
+        it.target_invocation_targets AS target_id,
+        MAX(ts.total_run_duration_in_ms) AS max_duration,
+        bi.created_timestamp AS build_at
+    FROM invocation_targets it
+    JOIN test_summaries ts
+        ON ts.invocation_target_test_summary = it.id
+    JOIN bazel_invocations bi
+        ON bi.id = it.bazel_invocation_invocation_targets
+    WHERE it.bazel_invocation_invocation_targets = sqlc.arg(bazel_invocation_id)
+    GROUP BY it.target_invocation_targets, bi.created_timestamp
+) AS source
+WHERE t.id = source.target_id
+    AND (
+        t.max_test_run_duration_in_ms < COALESCE(source.max_duration, 0)
+        OR t.last_test_build_at < source.build_at
+    );

@@ -536,7 +536,7 @@ type ComplexityRoot struct {
 		FindActions          func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.ActionWhereInput) int
 		FindBazelInvocations func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.BazelInvocationOrder, where *ent.BazelInvocationWhereInput) int
 		FindBuilds           func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.BuildOrder, where *ent.BuildWhereInput) int
-		FindTargets          func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.TargetWhereInput) int
+		FindTargets          func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.TargetOrder, where *ent.TargetWhereInput) int
 		FindTestSummaries    func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.TestSummaryOrder, where *ent.TestSummaryWhereInput) int
 		GetAuthenticatedUser func(childComplexity int, userUUID uuid.UUID) int
 		GetBazelInvocation   func(childComplexity int, invocationID uuid.UUID) int
@@ -580,13 +580,15 @@ type ComplexityRoot struct {
 	}
 
 	Target struct {
-		Aspect            func(childComplexity int) int
-		ID                func(childComplexity int) int
-		InstanceName      func(childComplexity int) int
-		InvocationTargets func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.InvocationTargetWhereInput) int
-		Label             func(childComplexity int) int
-		TargetKind        func(childComplexity int) int
-		TestTarget        func(childComplexity int) int
+		Aspect                 func(childComplexity int) int
+		ID                     func(childComplexity int) int
+		InstanceName           func(childComplexity int) int
+		InvocationTargets      func(childComplexity int, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.InvocationTargetWhereInput) int
+		Label                  func(childComplexity int) int
+		LastTestBuildAt        func(childComplexity int) int
+		MaxTestRunDurationInMs func(childComplexity int) int
+		TargetKind             func(childComplexity int) int
+		TestTarget             func(childComplexity int) int
 	}
 
 	TargetConnection struct {
@@ -841,7 +843,7 @@ type QueryResolver interface {
 	FindActions(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.ActionWhereInput) (*ent.ActionConnection, error)
 	FindBazelInvocations(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.BazelInvocationOrder, where *ent.BazelInvocationWhereInput) (*ent.BazelInvocationConnection, error)
 	FindBuilds(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.BuildOrder, where *ent.BuildWhereInput) (*ent.BuildConnection, error)
-	FindTargets(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, where *ent.TargetWhereInput) (*ent.TargetConnection, error)
+	FindTargets(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.TargetOrder, where *ent.TargetWhereInput) (*ent.TargetConnection, error)
 	FindTestSummaries(ctx context.Context, after *entgql.Cursor[int64], first *int, before *entgql.Cursor[int64], last *int, orderBy *ent.TestSummaryOrder, where *ent.TestSummaryWhereInput) (*ent.TestSummaryConnection, error)
 	GetAuthenticatedUser(ctx context.Context, userUUID uuid.UUID) (*ent.AuthenticatedUser, error)
 	GetBazelInvocation(ctx context.Context, invocationID uuid.UUID) (*ent.BazelInvocation, error)
@@ -3105,7 +3107,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Query.FindTargets(childComplexity, args["after"].(*entgql.Cursor[int64]), args["first"].(*int), args["before"].(*entgql.Cursor[int64]), args["last"].(*int), args["where"].(*ent.TargetWhereInput)), true
+		return e.ComplexityRoot.Query.FindTargets(childComplexity, args["after"].(*entgql.Cursor[int64]), args["first"].(*int), args["before"].(*entgql.Cursor[int64]), args["last"].(*int), args["orderBy"].(*ent.TargetOrder), args["where"].(*ent.TargetWhereInput)), true
 	case "Query.findTestSummaries":
 		if e.ComplexityRoot.Query.FindTestSummaries == nil {
 			break
@@ -3372,6 +3374,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Target.Label(childComplexity), true
+	case "Target.lastTestBuildAt":
+		if e.ComplexityRoot.Target.LastTestBuildAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Target.LastTestBuildAt(childComplexity), true
+	case "Target.maxTestRunDurationInMs":
+		if e.ComplexityRoot.Target.MaxTestRunDurationInMs == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Target.MaxTestRunDurationInMs(childComplexity), true
 	case "Target.targetKind":
 		if e.ComplexityRoot.Target.TargetKind == nil {
 			break
@@ -4004,6 +4018,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSourceControlWhereInput,
 		ec.unmarshalInputSystemNetworkStatsWhereInput,
 		ec.unmarshalInputTargetMetricsWhereInput,
+		ec.unmarshalInputTargetOrder,
 		ec.unmarshalInputTargetWhereInput,
 		ec.unmarshalInputTestResultWhereInput,
 		ec.unmarshalInputTestSummaryOrder,
@@ -4972,6 +4987,10 @@ func (ec *executionContext) childFields_Target(ctx context.Context, field graphq
 		return ec.fieldContext_Target_aspect(ctx, field)
 	case "targetKind":
 		return ec.fieldContext_Target_targetKind(ctx, field)
+	case "maxTestRunDurationInMs":
+		return ec.fieldContext_Target_maxTestRunDurationInMs(ctx, field)
+	case "lastTestBuildAt":
+		return ec.fieldContext_Target_lastTestBuildAt(ctx, field)
 	case "instanceName":
 		return ec.fieldContext_Target_instanceName(ctx, field)
 	case "invocationTargets":
@@ -5833,14 +5852,22 @@ func (ec *executionContext) field_Query_findTargets_args(ctx context.Context, ra
 		return nil, err
 	}
 	args["last"] = arg3
-	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "where",
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "orderBy",
+		func(ctx context.Context, v any) (*ent.TargetOrder, error) {
+			return ec.unmarshalOTargetOrder2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTargetOrder(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["orderBy"] = arg4
+	arg5, err := graphql.ProcessArgField(ctx, rawArgs, "where",
 		func(ctx context.Context, v any) (*ent.TargetWhereInput, error) {
 			return ec.unmarshalOTargetWhereInput2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTargetWhereInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
-	args["where"] = arg4
+	args["where"] = arg5
 	return args, nil
 }
 
@@ -13496,7 +13523,7 @@ func (ec *executionContext) _Query_findTargets(ctx context.Context, field graphq
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().FindTargets(ctx, fc.Args["after"].(*entgql.Cursor[int64]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int64]), fc.Args["last"].(*int), fc.Args["where"].(*ent.TargetWhereInput))
+			return ec.Resolvers.Query().FindTargets(ctx, fc.Args["after"].(*entgql.Cursor[int64]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int64]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.TargetOrder), fc.Args["where"].(*ent.TargetWhereInput))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *ent.TargetConnection) graphql.Marshaler {
@@ -14516,6 +14543,52 @@ func (ec *executionContext) _Target_targetKind(ctx context.Context, field graphq
 }
 func (ec *executionContext) fieldContext_Target_targetKind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Target", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Target_maxTestRunDurationInMs(ctx context.Context, field graphql.CollectedField, obj *ent.Target) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Target_maxTestRunDurationInMs(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.MaxTestRunDurationInMs, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int64) graphql.Marshaler {
+			return ec.marshalNInt2int64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Target_maxTestRunDurationInMs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Target", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Target_lastTestBuildAt(ctx context.Context, field graphql.CollectedField, obj *ent.Target) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Target_lastTestBuildAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.LastTestBuildAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Target_lastTestBuildAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Target", field, false, false, errors.New("field of type Time does not have child fields"))
 }
 
 func (ec *executionContext) _Target_instanceName(ctx context.Context, field graphql.CollectedField, obj *ent.Target) (ret graphql.Marshaler) {
@@ -33615,6 +33688,47 @@ func (ec *executionContext) unmarshalInputTargetMetricsWhereInput(ctx context.Co
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTargetOrder(ctx context.Context, obj any) (ent.TargetOrder, error) {
+	var it ent.TargetOrder
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNTargetOrderField2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTargetOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTargetWhereInput(ctx context.Context, obj any) (ent.TargetWhereInput, error) {
 	var it ent.TargetWhereInput
 	if obj == nil {
@@ -33626,7 +33740,7 @@ func (ec *executionContext) unmarshalInputTargetWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "label", "labelNEQ", "labelIn", "labelNotIn", "labelGT", "labelGTE", "labelLT", "labelLTE", "labelContains", "labelHasPrefix", "labelHasSuffix", "labelEqualFold", "labelContainsFold", "aspect", "aspectNEQ", "aspectIn", "aspectNotIn", "aspectGT", "aspectGTE", "aspectLT", "aspectLTE", "aspectContains", "aspectHasPrefix", "aspectHasSuffix", "aspectEqualFold", "aspectContainsFold", "targetKind", "targetKindNEQ", "targetKindIn", "targetKindNotIn", "targetKindGT", "targetKindGTE", "targetKindLT", "targetKindLTE", "targetKindContains", "targetKindHasPrefix", "targetKindHasSuffix", "targetKindEqualFold", "targetKindContainsFold", "hasInstanceName", "hasInstanceNameWith", "hasInvocationTargets", "hasInvocationTargetsWith", "hasTestTarget", "hasTestTargetWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "label", "labelNEQ", "labelIn", "labelNotIn", "labelGT", "labelGTE", "labelLT", "labelLTE", "labelContains", "labelHasPrefix", "labelHasSuffix", "labelEqualFold", "labelContainsFold", "aspect", "aspectNEQ", "aspectIn", "aspectNotIn", "aspectGT", "aspectGTE", "aspectLT", "aspectLTE", "aspectContains", "aspectHasPrefix", "aspectHasSuffix", "aspectEqualFold", "aspectContainsFold", "targetKind", "targetKindNEQ", "targetKindIn", "targetKindNotIn", "targetKindGT", "targetKindGTE", "targetKindLT", "targetKindLTE", "targetKindContains", "targetKindHasPrefix", "targetKindHasSuffix", "targetKindEqualFold", "targetKindContainsFold", "maxTestRunDurationInMs", "maxTestRunDurationInMsNEQ", "maxTestRunDurationInMsIn", "maxTestRunDurationInMsNotIn", "maxTestRunDurationInMsGT", "maxTestRunDurationInMsGTE", "maxTestRunDurationInMsLT", "maxTestRunDurationInMsLTE", "lastTestBuildAt", "lastTestBuildAtNEQ", "lastTestBuildAtIn", "lastTestBuildAtNotIn", "lastTestBuildAtGT", "lastTestBuildAtGTE", "lastTestBuildAtLT", "lastTestBuildAtLTE", "hasInstanceName", "hasInstanceNameWith", "hasInvocationTargets", "hasInvocationTargetsWith", "hasTestTarget", "hasTestTargetWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33999,6 +34113,118 @@ func (ec *executionContext) unmarshalInputTargetWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.TargetKindContainsFold = data
+		case "maxTestRunDurationInMs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxTestRunDurationInMs"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxTestRunDurationInMs = data
+		case "maxTestRunDurationInMsNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxTestRunDurationInMsNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxTestRunDurationInMsNEQ = data
+		case "maxTestRunDurationInMsIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxTestRunDurationInMsIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxTestRunDurationInMsIn = data
+		case "maxTestRunDurationInMsNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxTestRunDurationInMsNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxTestRunDurationInMsNotIn = data
+		case "maxTestRunDurationInMsGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxTestRunDurationInMsGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxTestRunDurationInMsGT = data
+		case "maxTestRunDurationInMsGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxTestRunDurationInMsGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxTestRunDurationInMsGTE = data
+		case "maxTestRunDurationInMsLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxTestRunDurationInMsLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxTestRunDurationInMsLT = data
+		case "maxTestRunDurationInMsLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxTestRunDurationInMsLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxTestRunDurationInMsLTE = data
+		case "lastTestBuildAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAt = data
+		case "lastTestBuildAtNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtNEQ = data
+		case "lastTestBuildAtIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtIn = data
+		case "lastTestBuildAtNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtNotIn = data
+		case "lastTestBuildAtGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtGT = data
+		case "lastTestBuildAtGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtGTE = data
+		case "lastTestBuildAtLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtLT = data
+		case "lastTestBuildAtLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastTestBuildAtLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastTestBuildAtLTE = data
 		case "hasInstanceName":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasInstanceName"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -46737,6 +46963,16 @@ func (ec *executionContext) _Target(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "maxTestRunDurationInMs":
+			out.Values[i] = ec._Target_maxTestRunDurationInMs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "lastTestBuildAt":
+			out.Values[i] = ec._Target_lastTestBuildAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "instanceName":
 			field := field
 
@@ -49740,6 +49976,22 @@ func (ec *executionContext) unmarshalNTargetMetricsWhereInput2ᚖgithubᚗcomᚋ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNTargetOrderField2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTargetOrderField(ctx context.Context, v any) (*ent.TargetOrderField, error) {
+	var res = new(ent.TargetOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTargetOrderField2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTargetOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.TargetOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalNTargetWhereInput2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTargetWhereInput(ctx context.Context, v any) (*ent.TargetWhereInput, error) {
 	res, err := ec.unmarshalInputTargetWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -52161,6 +52413,14 @@ func (ec *executionContext) unmarshalOTargetMetricsWhereInput2ᚖgithubᚗcomᚋ
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputTargetMetricsWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOTargetOrder2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTargetOrder(ctx context.Context, v any) (*ent.TargetOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTargetOrder(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
